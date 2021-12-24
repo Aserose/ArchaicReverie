@@ -1,0 +1,32 @@
+formatLog :             "%s: %s"
+formatErr :             "%s: %s: %s"
+init :                  start initialization
+initOk :                initialization ok
+initNoOk :              "initialization error: %s"
+create :                creating data
+read :                  reading data
+update :                updating data
+delete :                deleting data
+createToken :           creating token error
+readToken :             reading token error
+unmarshal :             unmarshal json
+marshal :               marshal json
+
+authStatus :
+  busyUsername :    This username is already taken
+  invalidUsername : invalid username
+  invalidPassword : invalid password
+  userNotFound :    Not found
+  signIn :          You are sign in
+  signUp :          You are sign up
+  signOut :         You are sign out
+  cookieName :      AuthenticationKey
+
+charStatus :
+  charCreate : character created
+  charGet :
+  charUpdate : character updated
+  charDelete : character deleted
+
+postgresConnectFormat : "user=%s dbname=%s password=%s sslmode=%s"
+driverName :            postgres

@@ -5,41 +5,61 @@ import (
 	"fmt"
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/golang-jwt/jwt"
-	"log"
 	"time"
 )
 
-const (
-	empty                  = ""
-	AuthServicePackageName = "AuthService"
-)
+const empty = ""
 
 type TokenClaims struct {
 	jwt.StandardClaims
 	UserId    int             `json:"id"`
 	Character model.Character `json:"character"`
-	//TODO
 }
 
-func (s serviceAuthorization) SignUp(username, password string) string {
+func (s serviceAuthorization) SignUp(username, password string) (string, int) {
 	id, status := s.db.Postgres.UserData.Create(username, s.createPasswordHash(password))
 	if status != empty {
-		return status
+		return status, 0
 	}
-	return s.createToken(id, model.Character{})
+	return s.createToken(id, model.Character{}), id
 }
 
-func (s serviceAuthorization) SignIn(username, password string) string {
+func (s serviceAuthorization) SignIn(username, password string) (string, int) {
+	id, status := s.db.Postgres.UserData.Check(username, s.createPasswordHash(password))
+	if status != empty {
+		return status, 0
+	}
+
+	return s.createToken(id, model.Character{}), id
+}
+
+func (s serviceAuthorization) UpdateToken(userId int, character model.Character) string {
+	if character.CharId == 0 {
+		return s.msgToUser.AuthStatus.NoCharacter
+	}
+	return s.createToken(userId, character)
+}
+
+func (s serviceAuthorization) UpdatePassword(username, password, newPassword string) string {
 	id, status := s.db.Postgres.UserData.Check(username, s.createPasswordHash(password))
 	if status != empty {
 		return status
 	}
-	return s.createToken(id, model.Character{})
+	if err := s.db.Postgres.UserData.UpdatePassword(id, s.createPasswordHash(newPassword)); err != nil {
+		return s.msgToUser.AuthStatus.Error
+	}
+	return s.msgToUser.AuthStatus.PasswordUpdated
 }
 
-func (s serviceAuthorization) UpdateToken(userId int, character model.Character) string {
-	log.Print("update token ", character)
-	return s.createToken(userId, character)
+func (s serviceAuthorization) DeleteAccount(username, password string) string {
+	id, status := s.db.Postgres.UserData.Check(username, s.createPasswordHash(password))
+	if status != empty {
+		return status
+	}
+	if err := s.db.Postgres.UserData.DeleteAccount(id); err != nil {
+		return s.msgToUser.AuthStatus.Error
+	}
+	return s.msgToUser.AuthStatus.AccountDeleted
 }
 
 func (s serviceAuthorization) createToken(userId int, character model.Character) string {
@@ -53,7 +73,7 @@ func (s serviceAuthorization) createToken(userId int, character model.Character)
 
 	tokenString, err := token.SignedString([]byte(s.cfgServices.HMACSecret))
 	if err != nil {
-		s.log.Errorf(s.logMsg.FormatErr, AuthServicePackageName, s.logMsg.CreateToken, err.Error())
+		s.log.Errorf(s.logMsg.FormatErr, s.log.CallInfoStr(), s.logMsg.CreateToken, err.Error())
 		return empty
 	}
 
@@ -68,14 +88,14 @@ func (s serviceAuthorization) Verification(tokenString string) (int, model.Chara
 		return []byte(s.cfgServices.HMACSecret), nil
 	})
 	if err != nil {
-		s.log.Errorf(s.logMsg.FormatErr, AuthServicePackageName, s.logMsg.ReadToken, err.Error())
+		s.log.Errorf(s.logMsg.FormatErr, s.log.CallInfoStr(), s.logMsg.ReadToken, err.Error())
 		return 0, model.Character{}, err
 	}
 
 	if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
 		return claims.UserId, claims.Character, nil
 	} else {
-		s.log.Errorf(s.logMsg.FormatErr, AuthServicePackageName, s.logMsg.ReadToken, err.Error())
+		s.log.Errorf(s.logMsg.FormatErr, s.log.CallInfoStr(), s.logMsg.ReadToken, err.Error())
 		return 0, model.Character{}, err
 	}
 }

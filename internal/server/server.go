@@ -6,15 +6,13 @@ import (
 	"net/http"
 )
 
-const ServerPackageName = "server"
-
 type Server struct {
 	server *http.Server
 }
 
 func (s Server) Start(port string, handler http.Handler, log logger.Logger, logMsg config.LogMsg) error {
 
-	log.Infof(logMsg.Format, ServerPackageName, logMsg.Init)
+	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.Init)
 
 	s.server = &http.Server{
 		Addr:    ":" + port,

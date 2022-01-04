@@ -9,28 +9,29 @@ import (
 
 type UserData interface {
 	Create(username, password string) (id int, authStatus string)
-	Read()
 	Check(username, password string) (id int, authStatus string)
-	Update()
-	Delete()
+	UpdatePassword(userId int, newPassword string) error
+	DeleteAccount(userId int) error
 }
 
 type CharacterData interface {
-	Create(character model.Character) error
+	Create(character model.Character) (int, error)
 	ReadAll(userId int) []model.Character
 	ReadOne(userId, charId int) model.Character
 	Update(character model.Character) error
-	Delete(charId int) error
+	Delete(userId, charId int) error
+	DeleteAll(userId int) error
 }
 
 type EventData interface {
-	//TODO
+	GenerateEventLocation() model.Location
 }
 
 type PostgresData struct {
 	db *sqlx.DB
 	UserData
 	CharacterData
+	EventData
 }
 
 func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg) *PostgresData {
@@ -38,5 +39,6 @@ func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger,
 		db:            db,
 		UserData:      NewUserData(db, msgToUser, log, logMsg),
 		CharacterData: NewCharacterData(db, log, logMsg),
+		EventData:     NewEventData(db, log, logMsg),
 	}
 }

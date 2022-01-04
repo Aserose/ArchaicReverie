@@ -4,36 +4,82 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 const (
-	AuthHandlerPackageName = "AuthHandler"
-	username               = "username"
-	password               = "password"
-	UserId                 = "userId"
-	Character              = "character"
-	cookiePath             = "/api"
-	Empty                  = ""
+	username    = "username"
+	password    = "password"
+	newPassword = "newPassword"
+	UserId      = "userId"
+	Character   = "character"
+	cookiePath  = "/"
+	empty       = ""
 )
 
 func (h Handler) signIn(c *gin.Context) {
-	respBody := unmarshalCredentials(h.readRespBody(c.Request.Body))
-	h.setToken(c, h.service.Authorization.SignIn(
-		respBody[username],
-		respBody[password]),
-		h.msgToUser.AuthStatus.SignIn)
+	obtainedCookie, _ := c.Request.Cookie(h.utilitiesStr.CookieName)
 
-}
-func (h Handler) signUp(c *gin.Context) {
+	if obtainedCookie != nil {
+		if obtainedCookie.Value != empty {
+			if _, err := c.Writer.WriteString(h.msgToUser.AuthStatus.SignAlready); err != nil {
+				h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			}
+			return
+		}
+	}
+
 	respBody := unmarshalCredentials(h.readRespBody(c.Request.Body))
-	h.setToken(c, h.service.Authorization.SignUp(
+	token, id := h.service.Authorization.SignIn(
 		respBody[username],
-		respBody[password]),
-		h.msgToUser.AuthStatus.SignUp)
+		respBody[password])
+
+	h.setToken(c, token, id)
+}
+
+func (h Handler) signUp(c *gin.Context) {
+	obtainedCookie, _ := c.Request.Cookie(h.utilitiesStr.CookieName)
+
+	if obtainedCookie != nil {
+		if obtainedCookie.Value != empty {
+			if _, err := c.Writer.WriteString(h.msgToUser.AuthStatus.SignAlready); err != nil {
+				h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			}
+			return
+		}
+	}
+
+	respBody := unmarshalCredentials(h.readRespBody(c.Request.Body))
+	token, id := h.service.Authorization.SignUp(
+		respBody[username],
+		respBody[password])
+
+	h.setToken(c, token, id)
 }
 
 func (h Handler) signOut(c *gin.Context) {
-	h.setToken(c, Empty, h.msgToUser.AuthStatus.SignOut)
+	h.setToken(c, empty, 0)
+}
+
+func (h Handler) updPassword(c *gin.Context) {
+	respBody := unmarshalCredentials(h.readRespBody(c.Request.Body))
+	if _, err := c.Writer.WriteString(h.service.Authorization.UpdatePassword(
+		respBody[username],
+		respBody[password],
+		respBody[newPassword])); err != nil {
+		h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func (h Handler) deleteAccount(c *gin.Context) {
+	respBody := unmarshalCredentials(h.readRespBody(c.Request.Body))
+	h.setToken(c, empty, 0)
+	if _, err := c.Writer.WriteString(h.service.Authorization.DeleteAccount(
+		respBody[username],
+		respBody[password])); err != nil {
+		h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+	}
 }
 
 func unmarshalCredentials(respBody []byte) map[string]string {
@@ -43,28 +89,41 @@ func unmarshalCredentials(respBody []byte) map[string]string {
 	return unmarshalRespBody
 }
 
-func (h Handler) setToken(c *gin.Context, token, successStatus string) {
+func (h Handler) setToken(c *gin.Context, token string, id int) {
 	switch token {
 	case h.msgToUser.AuthStatus.BusyUsername:
-		c.Writer.WriteString(token)
+		if _, err := c.Writer.WriteString(token); err != nil {
+			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		}
 	case h.msgToUser.AuthStatus.UserNotFound:
-		c.Writer.WriteString(token)
+		if _, err := c.Writer.WriteString(token); err != nil {
+			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		}
 	case h.msgToUser.AuthStatus.InvalidPassword:
-		c.Writer.WriteString(token)
+		if _, err := c.Writer.WriteString(token); err != nil {
+			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		}
 	case h.msgToUser.AuthStatus.InvalidUsername:
-		c.Writer.WriteString(token)
+		if _, err := c.Writer.WriteString(token); err != nil {
+			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		}
+	case h.msgToUser.CharStatus.CharNotSelect:
+		if _, err := c.Writer.WriteString(token); err != nil {
+			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		}
 	default:
 		http.SetCookie(c.Writer, &http.Cookie{
-			Name:  h.msgToUser.AuthStatus.CookieName,
-			Value: token,
-			Path:  cookiePath,
+			Name:    h.utilitiesStr.CookieName,
+			Value:   token,
+			Path:    cookiePath,
+			Expires: time.Now().AddDate(0, 0, 1),
 		})
-		c.Writer.Write([]byte(successStatus))
+		c.JSON(http.StatusOK, id)
 	}
 }
 
 func (h Handler) verification(c *gin.Context) {
-	token, err := c.Request.Cookie(h.msgToUser.AuthStatus.CookieName)
+	token, err := c.Request.Cookie(h.utilitiesStr.CookieName)
 	if err != nil {
 		if err == http.ErrNoCookie {
 			c.Writer.WriteHeader(http.StatusUnauthorized)
@@ -82,7 +141,7 @@ func (h Handler) verification(c *gin.Context) {
 
 	marshalCharacter, err := json.Marshal(character)
 	if err != nil {
-		h.log.Errorf(h.logMsg.FormatErr, AuthHandlerPackageName)
+		h.log.Errorf(h.logMsg.FormatErr, h.log.CallInfoStr(), err.Error())
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

@@ -9,10 +9,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const PostgresPackageName = "postgres"
-
 func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.LogMsg) *sqlx.DB {
-	log.Infof(logMsg.Format, PostgresPackageName, logMsg.Init)
+
+	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.Init)
 
 	db, err := sqlx.Connect(cfgPostgres.DriverName,
 		fmt.Sprintf(cfgPostgres.ConnectFormat,
@@ -21,13 +20,21 @@ func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.
 			cfgPostgres.Password,
 			cfgPostgres.SSLMode))
 	if err != nil {
-		log.Panicf(logMsg.FormatErr, PostgresPackageName, logMsg.InitNoOk, err.Error())
+		log.Panicf(logMsg.FormatErr, log.CallInfoStr(), logMsg.InitNoOk, err.Error())
 	}
 
-	db.MustExec(scheme.SchemaUser)
-	db.MustExec(scheme.SchemaCharacter)
+	createTables(db,
+		scheme.SchemaUser,
+		scheme.SchemaCharacter,
+		scheme.SchemaLocation)
 
-	log.Infof(logMsg.Format, PostgresPackageName, logMsg.InitOk)
+	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.InitOk)
 
 	return db
+}
+
+func createTables(db *sqlx.DB, schemes ...string) {
+	for _, schemeDB := range schemes {
+		db.MustExec(schemeDB)
+	}
 }

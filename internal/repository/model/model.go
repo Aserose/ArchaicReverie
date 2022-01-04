@@ -1,9 +1,10 @@
 package model
 
 type User struct {
-	Id       int    `json:"-" db:"id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Id                 int    `json:"-" db:"id"`
+	Username           string `json:"username"`
+	Password           string `json:"password"`
+	NumberOfCharacters int    `json:"numberOfCharacters"`
 }
 
 type Character struct {
@@ -27,32 +28,33 @@ type Jump struct {
 }
 
 type Location struct {
-	NamePlace               string `json:"place"`
-	NameTimeOfDay           string `json:"timeOfDay"`
-	NameWeather             string `json:"weather"`
-	NameObstacle string `json:"obstacle"`
-	TotalClarity            int    `json:"totalLightLevel"`
-	TotalDifficultyMovement int    `json:"totalDifficultyMovement"`
-	Place
-	Weather
-	TimeOfDay
-	Obstacle
+	TotalSumValues          int `json:"totalSumValues"`
+	TotalClarity            int `json:"totalLightLevel"`
+	TotalDifficultyMovement int `json:"totalDifficultyMovement"`
+	Place                   `json:"places" db:"places"`
+	Weather                 `json:"weathers" db:"weathers"`
+	TimeOfDay               `json:"times" db:"times"`
+	Obstacle                `json:"obstacles" db:"obstacles"`
 }
 
 type Place struct {
-	DifficultyMovement int
+	Name               string `json:"name" db:"name"`
+	DifficultyMovement int    `json:"difficulty_movement" db:"difficulty_movement"`
 }
 
 type Weather struct {
-	Clarity            int
-	DifficultyMovement int
+	Name               string `json:"name" db:"name"`
+	Clarity            int    `json:"clarity" db:"clarity"`
+	DifficultyMovement int    `json:"difficulty_movement" db:"difficulty_movement"`
 }
 
 type TimeOfDay struct {
-	Clarity int
+	Name    string `json:"name" db:"name"`
+	Clarity int    `json:"clarity" db:"clarity"`
 }
 
 type Obstacle struct {
-	Length int
-	Height int
+	Name   string `json:"name" db:"name"`
+	Length int    `json:"length" db:"length"`
+	Height int    `json:"height" db:"height"`
 }

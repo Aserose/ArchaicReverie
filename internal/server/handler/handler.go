@@ -8,45 +8,50 @@ import (
 	"io"
 )
 
-const HandlerPackageName = "handler"
-
 type Handler struct {
-	service   *service.Service
-	msgToUser config.MsgToUser
-	log       logger.Logger
-	logMsg    config.LogMsg
+	service      *service.Service
+	utilitiesStr config.UtilitiesStr
+	msgToUser    config.MsgToUser
+	log          logger.Logger
+	logMsg       config.LogMsg
 }
 
-func NewHandler(service *service.Service, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg) *Handler {
+func NewHandler(service *service.Service, utilitiesStr config.UtilitiesStr, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg) *Handler {
 	return &Handler{
-		service:   service,
-		msgToUser: msgToUser,
-		log:       log,
-		logMsg:    logMsg,
+		service:      service,
+		utilitiesStr: utilitiesStr,
+		msgToUser:    msgToUser,
+		log:          log,
+		logMsg:       logMsg,
 	}
 }
 
-func (h *Handler) Routes() *gin.Engine {
+func (h *Handler) Routes(endpoints config.Endpoints) *gin.Engine {
 	router := gin.New()
 
-	auth := router.Group("/auth")
+	auth := router.Group(endpoints.AuthEndpoints.Auth)
 	{
-		auth.POST("/signIn", h.signIn)
-		auth.POST("/signUp", h.signUp)
-		auth.POST("/signOut", h.signOut)
+		auth.POST(endpoints.AuthEndpoints.SignIn, h.signIn)
+		auth.POST(endpoints.AuthEndpoints.SignUp, h.signUp)
+		auth.POST(endpoints.AuthEndpoints.SignOut, h.signOut)
+		auth.POST(endpoints.AuthEndpoints.NewPassword, h.updPassword)
+		auth.POST(endpoints.AuthEndpoints.DeleteAccount, h.deleteAccount)
 	}
 
-	api := router.Group("/api", h.verification)
+	api := router.Group(endpoints.ApiEndpoints.Api, h.verification)
 	{
-		api.POST("/createChar", h.createChar)
-		api.GET("/getAllChar", h.getAllChar)
-		api.GET("/getOneChar", h.getChar)
-		api.PUT("/updChar", h.updChar)
-		api.DELETE("/delChar", h.delChar)
+		api.POST(endpoints.ApiEndpoints.CreateChar, h.createChar)
+		api.GET(endpoints.ApiEndpoints.GetAllChar, h.getAllChar)
+		api.POST(endpoints.ApiEndpoints.SelectChar, h.selectChar)
+		api.PUT(endpoints.ApiEndpoints.UpdChar, h.updChar)
+		api.DELETE(endpoints.ApiEndpoints.DelChar, h.delChar)
+		api.DELETE(endpoints.ApiEndpoints.DelAllChar, h.delAllChar)
 
-		action := api.Group("/action")
+		action := api.Group(endpoints.ActionEndpoints.Action)
 		{
-			action.GET("/infoChar", h.infoChar)
+			action.GET(endpoints.ActionEndpoints.InfoAboutSelectedChar, h.infoAboutSelectedChar)
+			action.POST(endpoints.ActionEndpoints.BeginActionScene, h.beginActionScene)
+			action.POST(endpoints.ActionEndpoints.ActionScene, h.actionScene)
 		}
 	}
 
@@ -56,7 +61,7 @@ func (h *Handler) Routes() *gin.Engine {
 func (h Handler) readRespBody(closer io.ReadCloser) []byte {
 	respBody, err := io.ReadAll(closer)
 	if err != nil {
-		h.log.Errorf(h.logMsg.FormatErr, HandlerPackageName, h.logMsg.Read, err.Error())
+		h.log.Errorf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.Read, err.Error())
 	}
 
 	return respBody

@@ -1,18 +1,13 @@
 package data
 
 import (
-	"fmt"
 	"github.com/Aserose/ArchaicReverie/internal/config"
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 	"github.com/jmoiron/sqlx"
-	"log"
 )
 
-const (
-	empty               = ""
-	userDataPackageName = "CharacterData"
-)
+const empty = ""
 
 type PostgresUserData struct {
 	db        *sqlx.DB
@@ -30,36 +25,34 @@ func NewUserData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger, log
 	}
 }
 
-func (p *PostgresUserData) Create(username, password string) (id int, authStatus string) {
-
+func (p *PostgresUserData) Create(username, passwordHash string) (id int, authStatus string) {
 	var person model.User
 
-	p.db.Get(&person, "SELECT id FROM users WHERE username=$1", username)
+	p.db.Get(&person, `SELECT id FROM users WHERE username=$1`, username)
 
 	if person.Id != 0 {
 		return 0, p.msgToUser.AuthStatus.BusyUsername
 	}
 
-	_, err := p.db.Queryx("INSERT INTO users (username,password) VALUES ($1,$2)", username, password)
+	_, err := p.db.Queryx(`INSERT INTO users (username,password) VALUES ($1,$2)`, username, passwordHash)
 	if err != nil {
 
 	}
-
-	p.db.Get(&person, "SELECT id FROM users WHERE username=$1 AND password=$2", username, password)
+	p.db.Get(&person, `SELECT id FROM users WHERE username=$1 AND password=$2`, username, passwordHash)
 
 	return person.Id, empty
 }
 
-func (p *PostgresUserData) Check(username, password string) (id int, authStatus string) {
+func (p *PostgresUserData) Check(username, passwordHash string) (id int, authStatus string) {
 	var person model.User
 
-	p.db.Get(&person, "SELECT username FROM users WHERE username=$1", username)
+	p.db.Get(&person, `SELECT username FROM users WHERE username=$1`, username)
 
 	if person.Username == empty {
 		return person.Id, p.msgToUser.AuthStatus.InvalidUsername
 	}
 
-	p.db.Get(&person, "SELECT * FROM users WHERE username=$1 AND password=$2", username, password)
+	p.db.Get(&person, `SELECT * FROM users WHERE username=$1 AND password=$2`, username, passwordHash)
 
 	if person.Id == 0 {
 		return person.Id, p.msgToUser.AuthStatus.InvalidPassword
@@ -68,28 +61,18 @@ func (p *PostgresUserData) Check(username, password string) (id int, authStatus 
 	return person.Id, empty
 }
 
-func (p *PostgresUserData) Read() {
-
-	var per model.User
-
-	rows, err := p.db.Queryx("SELECT * FROM users")
-	if err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, userDataPackageName, p.logMsg.Read, err.Error())
+func (p *PostgresUserData) UpdatePassword(userId int, newPassword string) error {
+	if _, err := p.db.Exec(`UPDATE users SET password=$1 WHERE id=$2`, newPassword, userId); err != nil {
+		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Update, err.Error())
+		return err
 	}
-
-	for rows.Next() {
-		err := rows.StructScan(&per)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		fmt.Printf("%#v\n", per)
-	}
+	return nil
 }
 
-func (p *PostgresUserData) Update() {
-	//TODO
-}
-
-func (p *PostgresUserData) Delete() {
-	//TODO
+func (p *PostgresUserData) DeleteAccount(userId int) error {
+	if _, err := p.db.Exec(`DELETE FROM users WHERE id=$1`, userId); err != nil {
+		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Delete, err.Error())
+		return err
+	}
+	return nil
 }

@@ -10,29 +10,39 @@ import (
 )
 
 type Authorization interface {
-	SignIn(username, password string) string
-	SignUp(username, password string) string
+	SignIn(username, password string) (string, int)
+	SignUp(username, password string) (string, int)
 	UpdateToken(userId int, character model.Character) string
+	UpdatePassword(username, password, newPassword string) string
 	Verification(token string) (int, model.Character, error)
+	DeleteAccount(username, password string) string
 }
 
 type Character interface {
-	CreateCharacter(character model.Character) error
+	CreateCharacter(character model.Character) (int, error)
 	GetAllCharacters(userId int) []model.Character
 	GetOne(userId, charId int) model.Character
 	Update(character model.Character) error
-	Delete(charId int) error
+	Delete(userId, charId int) error
+	DeleteAll(userId int) error
+}
+
+type Action interface {
+	GenerateScene() string
+	Jump(character model.Character, jumpPosition model.Jump) string
 }
 
 type Service struct {
 	Authorization
 	Character
-	//TODO
+	Action
 }
 
-func NewService(db *repository.DB, cfgServices *config.CfgServices, log logger.Logger, logMsg config.LogMsg) *Service {
+func NewService(db *repository.DB, utilitiesStr config.UtilitiesStr, cfgServices *config.CfgServices,
+	msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg) *Service {
 	return &Service{
-		Authorization: authorization.NewServiceAuthorization(db, cfgServices, log, logMsg),
-		Character:     api.NewApiService(db),
+		Authorization: authorization.NewServiceAuthorization(db, cfgServices, log, logMsg, msgToUser),
+		Character:     api.NewCharacterService(db, msgToUser),
+		Action:        api.NewActionScene(db, utilitiesStr, msgToUser),
 	}
 }

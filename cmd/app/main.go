@@ -4,6 +4,6 @@ import "github.com/Aserose/ArchaicReverie/internal/app"
 
 func main() {
 
-	app.Start()
+	app.Start(0)
 
 }

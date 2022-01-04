@@ -11,13 +11,16 @@ type serviceAuthorization struct {
 	cfgServices *config.CfgServices
 	log         logger.Logger
 	logMsg      config.LogMsg
+	msgToUser   config.MsgToUser
 }
 
-func NewServiceAuthorization(db *repository.DB, cfgServices *config.CfgServices, log logger.Logger, logMsg config.LogMsg) *serviceAuthorization {
+func NewServiceAuthorization(db *repository.DB, cfgServices *config.CfgServices,
+	log logger.Logger, logMsg config.LogMsg, msgToUser config.MsgToUser) *serviceAuthorization {
 	return &serviceAuthorization{
 		db:          db,
 		cfgServices: cfgServices,
 		log:         log,
 		logMsg:      logMsg,
+		msgToUser:   msgToUser,
 	}
 }

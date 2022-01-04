@@ -35,7 +35,7 @@ func (h *Handler) Routes(endpoints config.Endpoints) *gin.Engine {
 		auth.POST(endpoints.AuthEndpoints.SignUp, h.signUp)
 		auth.POST(endpoints.AuthEndpoints.SignOut, h.signOut)
 		auth.POST(endpoints.AuthEndpoints.NewPassword, h.updPassword)
-		auth.POST(endpoints.AuthEndpoints.DeleteAccount, h.deleteAccount)
+		auth.DELETE(endpoints.AuthEndpoints.DeleteAccount, h.deleteAccount)
 	}
 
 	api := router.Group(endpoints.ApiEndpoints.Api, h.verification)

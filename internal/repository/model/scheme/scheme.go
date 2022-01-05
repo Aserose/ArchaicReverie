@@ -1,11 +1,16 @@
 package scheme
 
-var SchemaUser = `CREATE TABLE IF NOT EXISTS users (
+import "fmt"
+
+
+func CreateSchemaUser(numberCharLimit int) string {
+	return fmt.Sprintf(`CREATE TABLE IF NOT EXISTS users (
 		id serial PRIMARY KEY,
 		username varchar(255) not null unique,
 		password varchar(255) not null,
-		numberOfCharacters smallint CHECK (numberOfCharacters < 4)
-	);`
+		numberOfCharacters smallint CHECK (numberOfCharacters < %d)
+	);`,numberCharLimit)
+}
 
 var SchemaCharacter = `CREATE TABLE IF NOT EXISTS characters (
 		charId serial not null unique,

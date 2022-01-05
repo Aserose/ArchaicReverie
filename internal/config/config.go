@@ -93,7 +93,8 @@ type (
 	}
 	UtilitiesStr struct {
 		CookieName string `yaml:"cookieName"`
-		BadRequest string `yaml:"badRequest"`
+		BadRequest           string `yaml:"badRequest"`
+		NumberCharacterLimit int    `yaml:"characterLimit"`
 	}
 )
 
@@ -132,7 +133,7 @@ func InitStrSet(filename string, log logger.Logger) (LogMsg, MsgToUser, Utilitie
 	return logMsg, msgToUser, utilitiesStr, endpoints
 }
 
-func unmarshalYaml(filename string, log logger.Logger, outs ... interface{}) {
+func unmarshalYaml(filename string, log logger.Logger, outs ...interface{}) {
 	ymlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Errorf("yamlFile.Get err   #%v ", err)
@@ -164,7 +165,7 @@ func Init(filename string, log logger.Logger, logMsg LogMsg) (*CfgServer, *CfgSe
 		log.Errorf(logMsg.FormatErr, log.PackageAndFileNames(), logMsg.Init, err.Error())
 	}
 
-	readEnv(log,logMsg,
+	readEnv(log, logMsg,
 		&cfgServer,
 		&cfgServices,
 		&cfgPostgres)
@@ -176,7 +177,7 @@ func Init(filename string, log logger.Logger, logMsg LogMsg) (*CfgServer, *CfgSe
 	return &cfgServer, &cfgServices, &cfgPostgres, nil
 }
 
-func readEnv(log logger.Logger, logMsg LogMsg, cfgs ... interface{}) {
+func readEnv(log logger.Logger, logMsg LogMsg, cfgs ...interface{}) {
 	for _, cfg := range cfgs {
 		err := cleanenv.ReadEnv(cfg)
 		if err != nil {

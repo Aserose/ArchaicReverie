@@ -34,11 +34,11 @@ type PostgresData struct {
 	EventData
 }
 
-func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg) *PostgresData {
+func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg, numberCharLimit int) *PostgresData {
 	return &PostgresData{
 		db:            db,
 		UserData:      NewUserData(db, msgToUser, log, logMsg),
-		CharacterData: NewCharacterData(db, log, logMsg),
+		CharacterData: NewCharacterData(db, log, logMsg,numberCharLimit),
 		EventData:     NewEventData(db, log, logMsg),
 	}
 }

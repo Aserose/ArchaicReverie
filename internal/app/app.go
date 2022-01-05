@@ -31,7 +31,7 @@ func Start(mode int) {
 		log.Errorf(logMsg.FormatErr, log.CallInfoStr(), logMsg.InitNoOk, err.Error())
 	}
 
-	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg), msgToUser, log, logMsg)
+	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg,utilitiesStr.NumberCharacterLimit), msgToUser, log, logMsg,utilitiesStr.NumberCharacterLimit)
 
 	db := repository.NewDB(postgresData)
 

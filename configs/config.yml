@@ -33,6 +33,7 @@ authStatus :
 
 cookieName :      AuthenticationKey
 badRequest : Bad Request
+characterLimit: 3
 
 charStatus :
   charCreate : "the character is created. Id number: %d"

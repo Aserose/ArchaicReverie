@@ -12,9 +12,9 @@ import (
 
 func TestPostgresCharacterData(t *testing.T) {
 	logs := logger.NewLogger()
-	logMsg, msgToUser, cfgPostgres := loadEnv(logs)
+	logMsg, msgToUser, cfgPostgres,utilitiesStr  := loadEnv(logs)
 
-	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser)
+	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser,utilitiesStr.NumberCharacterLimit)
 
 	Convey("setup", t, func() {
 		var chars []model.Character

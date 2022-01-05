@@ -8,9 +8,9 @@ import (
 
 func TestPostgresEventData(t *testing.T) {
 	logs := logger.NewLogger()
-	logMsg, msgToUser, cfgPostgres := loadEnv(logs)
+	logMsg, msgToUser, cfgPostgres,utilitiesStr  := loadEnv(logs)
 
-	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser)
+	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser,utilitiesStr.NumberCharacterLimit)
 
 	Convey("generateLocation", t, func() {
 		So(db.EventData.GenerateEventLocation(), ShouldNotBeEmpty)

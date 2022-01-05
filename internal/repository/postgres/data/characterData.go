@@ -12,13 +12,15 @@ type PostgresCharacterData struct {
 	db     *sqlx.DB
 	log    logger.Logger
 	logMsg config.LogMsg
+	numberCharLimit int
 }
 
-func NewCharacterData(db *sqlx.DB, log logger.Logger, logMsg config.LogMsg) *PostgresCharacterData {
+func NewCharacterData(db *sqlx.DB, log logger.Logger, logMsg config.LogMsg, numberCharLimit int) *PostgresCharacterData {
 	return &PostgresCharacterData{
 		db:     db,
 		log:    log,
 		logMsg: logMsg,
+		numberCharLimit: numberCharLimit,
 	}
 }
 
@@ -28,7 +30,7 @@ func (p PostgresCharacterData) Create(character model.Character) (int, error) {
 		numOfChar = len(p.ReadAll(character.OwnerId))
 	)
 
-	if numOfChar >= 3 {
+	if numOfChar >= p.numberCharLimit {
 		return charId, errors.New(p.logMsg.CharLimitOutErr)
 	}
 

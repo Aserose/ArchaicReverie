@@ -17,9 +17,9 @@ import (
 
 func TestPostgresUserData(t *testing.T) {
 	logs := logger.NewLogger()
-	logMsg, msgToUser, cfgPostgres := loadEnv(logs)
+	logMsg, msgToUser, cfgPostgres,utilitiesStr  := loadEnv(logs)
 
-	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser)
+	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser, utilitiesStr.NumberCharacterLimit)
 
 	Convey("setup", t, func() {
 
@@ -53,23 +53,23 @@ func TestPostgresUserData(t *testing.T) {
 
 }
 
-func loadEnv(logs logger.Logger) (config.LogMsg, config.MsgToUser, *config.CfgPostgres) {
+func loadEnv(logs logger.Logger) (config.LogMsg, config.MsgToUser, *config.CfgPostgres,config.UtilitiesStr) {
 	re := regexp.MustCompile(`^(.*` + "ArchaicReverie" + `)`)
 	cwd, _ := os.Getwd()
 	rootPath := re.Find([]byte(cwd))
 	godotenv.Load(string(rootPath) + `/.env`)
-	logMsg, msgToUser, _, _ := config.InitStrSet(os.Getenv(`CONFIG_FILE`), logs)
+	logMsg, msgToUser, utilitiesStr, _ := config.InitStrSet(os.Getenv(`CONFIG_FILE`), logs)
 	_, _, cfgPostgres, err := config.Init(os.Getenv("CONFIG_FILE"), logs, logMsg)
 	if err != nil {
 		logs.Errorf(logMsg.FormatErr, logs.CallInfoStr(), logMsg.InitNoOk, err.Error())
 	}
 
-	return logMsg, msgToUser, cfgPostgres
+	return logMsg, msgToUser, cfgPostgres,utilitiesStr
 }
 
 func initPostgresDB(logs logger.Logger, logMsg config.LogMsg,
-	cfgPostgres *config.CfgPostgres, msgToUser config.MsgToUser) *PostgresData {
-	return NewPostgresData(postgres.Postgres(cfgPostgres, logs, logMsg), msgToUser, logs, logMsg)
+	cfgPostgres *config.CfgPostgres, msgToUser config.MsgToUser, numberCharLimit int) *PostgresData {
+	return NewPostgresData(postgres.Postgres(cfgPostgres, logs, logMsg,numberCharLimit), msgToUser, logs, logMsg,numberCharLimit)
 }
 
 func createTestUser(pqDB *PostgresData) model.User {

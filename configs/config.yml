@@ -31,9 +31,14 @@ authStatus :
   noCharacter: no character selected
   accountDeleted: account deleted
 
-cookieName :      AuthenticationKey
+cookieName :      ArchaicReverieKey
 badRequest : Bad Request
-characterLimit: 3
+
+numberCharLimit: 3
+minCharWeight: 38
+maxCharWeight: 123
+minCharGrowth: 144
+maxCharGrowth: 201
 
 charStatus :
   charCreate : "the character is created. Id number: %d"

@@ -24,25 +24,25 @@ var (
 func Start(mode int) {
 	log := logger.NewLogger()
 
-	logMsg, msgToUser, utilitiesStr, endpoints := config.InitStrSet(YmlFilename, log)
+	logMsg, msgToUser, utilitiesStr, endpoints, charConfig := config.InitStrSet(YmlFilename, log)
 
 	cfgServer, cfgServices, cfgPostgres, err := config.Init(YmlFilename, log, logMsg)
 	if err != nil {
 		log.Errorf(logMsg.FormatErr, log.CallInfoStr(), logMsg.InitNoOk, err.Error())
 	}
 
-	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg,utilitiesStr.NumberCharacterLimit), msgToUser, log, logMsg,utilitiesStr.NumberCharacterLimit)
+	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg, charConfig), msgToUser, log, logMsg, charConfig)
 
 	db := repository.NewDB(postgresData)
 
-	services := service.NewService(db, utilitiesStr, cfgServices, msgToUser, log, logMsg)
+	services := service.NewService(db, utilitiesStr, cfgServices, msgToUser, log, logMsg, charConfig)
 
 	handlers := handler.NewHandler(services, utilitiesStr, msgToUser, log, logMsg)
 
 	servers := server.Server{}
 
 	if mode == 1 {
-		testApiScheme(endpoints, handlers.Routes(endpoints).Routes())
+		getApiScheme(endpoints, handlers.Routes(endpoints).Routes())
 	}
 
 	if err := servers.Start(cfgServer.Port, handlers.Routes(endpoints), log, logMsg); err != nil {
@@ -50,7 +50,7 @@ func Start(mode int) {
 	}
 }
 
-func testApiScheme(endpoints config.Endpoints, info gin.RoutesInfo) {
+func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo) {
 	var toTest map[string]map[string]string
 
 	inrec, _ := json.Marshal(endpoints)

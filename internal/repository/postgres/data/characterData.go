@@ -9,18 +9,18 @@ import (
 )
 
 type PostgresCharacterData struct {
-	db     *sqlx.DB
-	log    logger.Logger
-	logMsg config.LogMsg
-	numberCharLimit int
+	db         *sqlx.DB
+	log        logger.Logger
+	logMsg     config.LogMsg
+	charConfig config.CharacterConfig
 }
 
-func NewCharacterData(db *sqlx.DB, log logger.Logger, logMsg config.LogMsg, numberCharLimit int) *PostgresCharacterData {
+func NewCharacterData(db *sqlx.DB, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *PostgresCharacterData {
 	return &PostgresCharacterData{
-		db:     db,
-		log:    log,
-		logMsg: logMsg,
-		numberCharLimit: numberCharLimit,
+		db:         db,
+		log:        log,
+		logMsg:     logMsg,
+		charConfig: charConfig,
 	}
 }
 
@@ -30,17 +30,17 @@ func (p PostgresCharacterData) Create(character model.Character) (int, error) {
 		numOfChar = len(p.ReadAll(character.OwnerId))
 	)
 
-	if numOfChar >= p.numberCharLimit {
+	if numOfChar >= p.charConfig.NumberCharLimit {
 		return charId, errors.New(p.logMsg.CharLimitOutErr)
 	}
 
-	if 145 > character.Growth || character.Growth > 200 {
-		if 40 > character.Weight || character.Weight > 120 {
+	if p.charConfig.MinCharGrowth > character.Growth || character.Growth > p.charConfig.MaxCharGrowth {
+		if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
 			return charId, errors.New(p.logMsg.CharGrowthAndWeightOutErr)
 		}
 		return charId, errors.New(p.logMsg.CharGrowthOutErr)
 	}
-	if 40 > character.Weight || character.Weight > 120 {
+	if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
 		return charId, errors.New(p.logMsg.CharWeightOutErr)
 	}
 
@@ -71,13 +71,13 @@ func (p PostgresCharacterData) ReadOne(userId, charId int) model.Character {
 }
 
 func (p PostgresCharacterData) Update(character model.Character) error {
-	if 145 > character.Growth || character.Growth > 200 {
-		if 40 > character.Weight || character.Weight > 120 {
+	if p.charConfig.MinCharGrowth > character.Growth || character.Growth > p.charConfig.MaxCharGrowth {
+		if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
 			return errors.New(p.logMsg.CharGrowthAndWeightOutErr)
 		}
 		return errors.New(p.logMsg.CharGrowthOutErr)
 	}
-	if 40 > character.Weight || character.Weight > 120 {
+	if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
 		return errors.New(p.logMsg.CharWeightOutErr)
 	}
 

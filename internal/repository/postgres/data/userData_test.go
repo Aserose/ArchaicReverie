@@ -17,9 +17,9 @@ import (
 
 func TestPostgresUserData(t *testing.T) {
 	logs := logger.NewLogger()
-	logMsg, msgToUser, cfgPostgres,utilitiesStr  := loadEnv(logs)
+	logMsg, msgToUser, cfgPostgres, charConfig := loadEnv(logs)
 
-	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser, utilitiesStr.NumberCharacterLimit)
+	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser, charConfig)
 
 	Convey("setup", t, func() {
 
@@ -30,46 +30,45 @@ func TestPostgresUserData(t *testing.T) {
 			id, _ := db.UserData.Check(testUser.Username, testUser.Password)
 			So(id, ShouldNotBeZeroValue)
 
+			Convey("create user with same username", func() {
+				_, status := db.UserData.Create(testUser.Username, testUser.Password)
+
+				So(status, ShouldEqual, msgToUser.AuthStatus.BusyUsername)
+			})
+
 			Convey("deleteAccount", func() {
-				if err := db.UserData.DeleteAccount(testUser.Id); err != nil {
+				if err := db.UserData.DeleteAccount(testUser.Id, testUser.Password); err != nil {
 					logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
 				}
 
 				id, _ := db.UserData.Create(testUser.Username, testUser.Password)
 				So(id, ShouldNotBeZeroValue)
 
-				if err := db.UserData.DeleteAccount(testUser.Id); err != nil {
+				if err := db.UserData.DeleteAccount(testUser.Id, testUser.Password); err != nil {
 					logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
 				}
 			})
-
-			Convey("create user with same username", func() {
-				_, status := db.UserData.Create(testUser.Username, testUser.Password)
-
-				So(status, ShouldEqual, msgToUser.AuthStatus.BusyUsername)
-			})
 		})
 	})
-
 }
 
-func loadEnv(logs logger.Logger) (config.LogMsg, config.MsgToUser, *config.CfgPostgres,config.UtilitiesStr) {
+func loadEnv(logs logger.Logger) (config.LogMsg, config.MsgToUser, *config.CfgPostgres, config.CharacterConfig) {
 	re := regexp.MustCompile(`^(.*` + "ArchaicReverie" + `)`)
 	cwd, _ := os.Getwd()
 	rootPath := re.Find([]byte(cwd))
 	godotenv.Load(string(rootPath) + `/.env`)
-	logMsg, msgToUser, utilitiesStr, _ := config.InitStrSet(os.Getenv(`CONFIG_FILE`), logs)
+	logMsg, msgToUser, _, _, charConfig := config.InitStrSet(os.Getenv(`CONFIG_FILE`), logs)
 	_, _, cfgPostgres, err := config.Init(os.Getenv("CONFIG_FILE"), logs, logMsg)
 	if err != nil {
 		logs.Errorf(logMsg.FormatErr, logs.CallInfoStr(), logMsg.InitNoOk, err.Error())
 	}
 
-	return logMsg, msgToUser, cfgPostgres,utilitiesStr
+	return logMsg, msgToUser, cfgPostgres, charConfig
 }
 
 func initPostgresDB(logs logger.Logger, logMsg config.LogMsg,
-	cfgPostgres *config.CfgPostgres, msgToUser config.MsgToUser, numberCharLimit int) *PostgresData {
-	return NewPostgresData(postgres.Postgres(cfgPostgres, logs, logMsg,numberCharLimit), msgToUser, logs, logMsg,numberCharLimit)
+	cfgPostgres *config.CfgPostgres, msgToUser config.MsgToUser, charConfig config.CharacterConfig) *PostgresData {
+	return NewPostgresData(postgres.Postgres(cfgPostgres, logs, logMsg, charConfig), msgToUser, logs, logMsg, charConfig)
 }
 
 func createTestUser(pqDB *PostgresData) model.User {

@@ -34,13 +34,13 @@ func (a *ActionScene) GenerateScene() string {
 	return ""
 }
 
-func (a *ActionScene) Jump(character model.Character, jumpPosition model.Jump) string {
+func (a *ActionScene) Jump(character model.Character, jumpPosition model.Jump) (string, model.Character) {
 	if validateActionJumpPosition(
 		jumpPosition.RunUp,
 		jumpPosition.BodyTilt,
 		jumpPosition.ArmAmplitude,
 		jumpPosition.SquatDepth) == false {
-		return a.utilitiesStr.BadRequest
+		return a.utilitiesStr.BadRequest, character
 	}
 
 	calcGrowth, calcWeight := convertCharParams(character)
@@ -59,10 +59,16 @@ func (a *ActionScene) Jump(character model.Character, jumpPosition model.Jump) s
 	a.locationScene = model.Location{}
 
 	if 1 >= result && result >= -1 {
-		return a.msgToUser.ActionMsg.JumpOver
+		return a.msgToUser.ActionMsg.JumpOver, character
 	} else {
-		return a.msgToUser.ActionMsg.JumpFell
+
+		return a.msgToUser.ActionMsg.JumpFell, damage(character, 10)
 	}
+}
+
+func damage(char model.Character, damage int) model.Character {
+	char.RemainHealth -= damage
+	return char
 }
 
 func convertCharParams(character model.Character) (int, int) {

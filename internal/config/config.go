@@ -92,9 +92,17 @@ type (
 		} `yaml:"actionEndpoints" json:"ActionEndpoints"`
 	}
 	UtilitiesStr struct {
-		CookieName string `yaml:"cookieName"`
+		CookieName           string `yaml:"cookieName"`
 		BadRequest           string `yaml:"badRequest"`
 		NumberCharacterLimit int    `yaml:"characterLimit"`
+	}
+
+	CharacterConfig struct {
+		NumberCharLimit int `yaml:"numberCharLimit"`
+		MinCharWeight   int `yaml:"minCharWeight"`
+		MaxCharWeight   int `yaml:"maxCharWeight"`
+		MinCharGrowth   int `yaml:"minCharGrowth"`
+		MaxCharGrowth   int `yaml:"maxCharGrowth"`
 	}
 )
 
@@ -116,21 +124,23 @@ type (
 	}
 )
 
-func InitStrSet(filename string, log logger.Logger) (LogMsg, MsgToUser, UtilitiesStr, Endpoints) {
+func InitStrSet(filename string, log logger.Logger) (LogMsg, MsgToUser, UtilitiesStr, Endpoints, CharacterConfig) {
 	var (
 		logMsg       LogMsg
 		msgToUser    MsgToUser
 		utilitiesStr UtilitiesStr
 		endpoints    Endpoints
+		charConfig   CharacterConfig
 	)
 
 	unmarshalYaml(filename, log,
 		&logMsg,
 		&msgToUser,
 		&utilitiesStr,
-		&endpoints)
+		&endpoints,
+		&charConfig)
 
-	return logMsg, msgToUser, utilitiesStr, endpoints
+	return logMsg, msgToUser, utilitiesStr, endpoints, charConfig
 }
 
 func unmarshalYaml(filename string, log logger.Logger, outs ...interface{}) {

@@ -9,7 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.LogMsg, numberCharLimit int) *sqlx.DB {
+func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *sqlx.DB {
 
 	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.Init)
 
@@ -24,8 +24,8 @@ func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.
 	}
 
 	createTables(db,
-		scheme.CreateSchemaUser(numberCharLimit+1),
-		scheme.SchemaCharacter,
+		scheme.CreateSchemaUser(charConfig.NumberCharLimit+1),
+		scheme.CreateSchemaCharacter(charConfig),
 		scheme.SchemaLocation)
 
 	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.InitOk)

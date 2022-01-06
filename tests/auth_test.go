@@ -11,7 +11,7 @@ import (
 
 func TestAuth(t *testing.T) {
 	logs := logger.NewLogger()
-	_, msgToUser,_ := loadEnv(logs)
+	_, msgToUser, _ := loadEnv(logs)
 	go app.Start(1)
 	apiScheme := loadApiScheme(logs)
 
@@ -21,7 +21,7 @@ func TestAuth(t *testing.T) {
 			cookie   []*http.Cookie
 			resp     *http.Response
 			testUser = generateTestUser()
-			r readAndRequest
+			r        readAndRequest
 		)
 
 		cv.Convey("signUp", func() {

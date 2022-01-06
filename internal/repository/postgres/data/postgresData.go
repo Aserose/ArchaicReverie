@@ -11,7 +11,7 @@ type UserData interface {
 	Create(username, password string) (id int, authStatus string)
 	Check(username, password string) (id int, authStatus string)
 	UpdatePassword(userId int, newPassword string) error
-	DeleteAccount(userId int) error
+	DeleteAccount(userId int, password string) error
 }
 
 type CharacterData interface {
@@ -34,11 +34,11 @@ type PostgresData struct {
 	EventData
 }
 
-func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg, numberCharLimit int) *PostgresData {
+func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *PostgresData {
 	return &PostgresData{
 		db:            db,
 		UserData:      NewUserData(db, msgToUser, log, logMsg),
-		CharacterData: NewCharacterData(db, log, logMsg,numberCharLimit),
+		CharacterData: NewCharacterData(db, log, logMsg, charConfig),
 		EventData:     NewEventData(db, log, logMsg),
 	}
 }

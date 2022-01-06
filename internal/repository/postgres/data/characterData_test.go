@@ -12,17 +12,17 @@ import (
 
 func TestPostgresCharacterData(t *testing.T) {
 	logs := logger.NewLogger()
-	logMsg, msgToUser, cfgPostgres,utilitiesStr  := loadEnv(logs)
+	logMsg, msgToUser, cfgPostgres, charConfig := loadEnv(logs)
 
-	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser,utilitiesStr.NumberCharacterLimit)
+	db := initPostgresDB(logs, logMsg, cfgPostgres, msgToUser, charConfig)
 
 	Convey("setup", t, func() {
 		var chars []model.Character
-		ownerId := createTestUser(db).Id
-		chars = append(chars, testCharModel(ownerId, 5))
-		chars = append(chars, testCharModel(ownerId, 10))
+		testUser := createTestUser(db)
+		chars = append(chars, testCharModel(testUser.Id, 5))
+		chars = append(chars, testCharModel(testUser.Id, 10))
 
-		So(ownerId, ShouldNotBeZeroValue)
+		So(testUser.Id, ShouldNotBeZeroValue)
 
 		Convey("createCharacter", func() {
 
@@ -36,29 +36,18 @@ func TestPostgresCharacterData(t *testing.T) {
 			}
 
 			Convey("readAllChar", func() {
-				So(db.CharacterData.ReadAll(ownerId), ShouldResemble, chars)
+				So(db.CharacterData.ReadAll(testUser.Id), ShouldResemble, chars)
 
 				Convey("updateChar", func() {
-					updChar := testCharModel(ownerId, 15)
+					updChar := testCharModel(testUser.Id, 15)
 					updChar.CharId = chars[len(chars)-1].CharId
 
 					if err := db.CharacterData.Update(updChar); err != nil {
 						logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
 					}
 					Convey("readOneChar", func() {
-						So(db.ReadOne(ownerId, updChar.CharId), ShouldResemble, updChar)
+						So(db.ReadOne(testUser.Id, updChar.CharId), ShouldResemble, updChar)
 
-						Convey("deleteAll", func() {
-							if err := db.DeleteAll(ownerId); err != nil {
-								logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
-							}
-
-							So(db.CharacterData.ReadAll(ownerId), ShouldBeNil)
-
-							if err := db.UserData.DeleteAccount(ownerId); err != nil {
-								logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
-							}
-						})
 						Convey("growth/weight out range", func() {
 							updChar.Growth = 210
 							updChar.Weight = 35
@@ -70,6 +59,18 @@ func TestPostgresCharacterData(t *testing.T) {
 								default:
 									logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
 								}
+							}
+						})
+
+						Convey("deleteAll", func() {
+							if err := db.DeleteAll(testUser.Id); err != nil {
+								logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
+							}
+
+							So(db.CharacterData.ReadAll(testUser.Id), ShouldBeNil)
+
+							if err := db.UserData.DeleteAccount(testUser.Id, testUser.Password); err != nil {
+								logs.Panicf(logMsg.Format, logs.CallInfoStr(), err.Error())
 							}
 						})
 					})

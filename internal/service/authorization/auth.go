@@ -56,7 +56,7 @@ func (s serviceAuthorization) DeleteAccount(username, password string) string {
 	if status != empty {
 		return status
 	}
-	if err := s.db.Postgres.UserData.DeleteAccount(id); err != nil {
+	if err := s.db.Postgres.UserData.DeleteAccount(id, s.createPasswordHash(password)); err != nil {
 		return s.msgToUser.AuthStatus.Error
 	}
 	return s.msgToUser.AuthStatus.AccountDeleted

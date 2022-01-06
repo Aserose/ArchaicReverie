@@ -8,11 +8,16 @@ type User struct {
 }
 
 type Character struct {
-	CharId  int    `json:"charId"`
-	OwnerId int    `json:"ownerId"`
-	Name    string `json:"name"`
-	Growth  int    `json:"growth"`
-	Weight  int    `json:"weight"`
+	CharId          int    `json:"charId"`
+	OwnerId         int    `json:"ownerId"`
+	Name            string `json:"name"`
+	Growth          int    `json:"growth"`
+	Weight          int    `json:"weight"`
+	ThresholdHealth int    `json:"thresholdHp"`
+	RemainHealth    int    `json:"remainHp"`
+	ThresholdEnergy int    `json:"thresholdMp"`
+	RemainEnergy    int    `json:"remainMp"`
+	CoinAmount      int    `json:"coinAmount"`
 }
 
 type Action struct {

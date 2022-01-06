@@ -84,8 +84,8 @@ func (h Handler) selectChar(c *gin.Context) {
 
 	selectedCharId := unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int)).CharId
 
-	h.setToken(c, h.service.Authorization.UpdateToken(
-		userId.(int), h.service.Character.GetOne(
+	h.setCookie(c, h.service.Authorization.UpdateToken(
+		userId.(int), h.service.Character.SelectChar(
 			userId.(int), selectedCharId)), selectedCharId)
 
 }

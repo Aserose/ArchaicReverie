@@ -34,7 +34,7 @@ func (h Handler) signIn(c *gin.Context) {
 		respBody[username],
 		respBody[password])
 
-	h.setToken(c, token, id)
+	h.setCookie(c, token, id)
 }
 
 func (h Handler) signUp(c *gin.Context) {
@@ -54,11 +54,11 @@ func (h Handler) signUp(c *gin.Context) {
 		respBody[username],
 		respBody[password])
 
-	h.setToken(c, token, id)
+	h.setCookie(c, token, id)
 }
 
 func (h Handler) signOut(c *gin.Context) {
-	h.setToken(c, empty, 0)
+	h.setCookie(c, empty, 0)
 }
 
 func (h Handler) updPassword(c *gin.Context) {
@@ -74,7 +74,7 @@ func (h Handler) updPassword(c *gin.Context) {
 
 func (h Handler) deleteAccount(c *gin.Context) {
 	respBody := unmarshalCredentials(h.readRespBody(c.Request.Body))
-	h.setToken(c, empty, 0)
+	h.setCookie(c, empty, 0)
 	if _, err := c.Writer.WriteString(h.service.Authorization.DeleteAccount(
 		respBody[username],
 		respBody[password])); err != nil {
@@ -89,7 +89,7 @@ func unmarshalCredentials(respBody []byte) map[string]string {
 	return unmarshalRespBody
 }
 
-func (h Handler) setToken(c *gin.Context, token string, id int) {
+func (h Handler) setCookie(c *gin.Context, token string, id int) {
 	switch token {
 	case h.msgToUser.AuthStatus.BusyUsername:
 		if _, err := c.Writer.WriteString(token); err != nil {
@@ -120,6 +120,15 @@ func (h Handler) setToken(c *gin.Context, token string, id int) {
 		})
 		c.JSON(http.StatusOK, id)
 	}
+}
+
+func (h Handler) updateCookie(c *gin.Context, token string) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:    h.utilitiesStr.CookieName,
+		Value:   token,
+		Path:    cookiePath,
+		Expires: time.Now().AddDate(0, 0, 1),
+	})
 }
 
 func (h Handler) verification(c *gin.Context) {

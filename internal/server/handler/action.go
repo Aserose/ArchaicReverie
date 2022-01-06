@@ -8,7 +8,7 @@ import (
 )
 
 func (h Handler) infoAboutSelectedChar(c *gin.Context) {
-	character, ok := h.getSelectedCharacter(c)
+	_, character, ok := h.getSelectedCharacter(c)
 	if !ok {
 		c.Writer.WriteHeader(http.StatusUnauthorized)
 		return
@@ -22,16 +22,9 @@ func (h Handler) infoAboutSelectedChar(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, character)
-
-	//formatted response
-	//if _, err := c.Writer.WriteString(fmt.Sprintf(h.msgToUser.ActionMsg.InfoCharFormat,
-	//	character.Name, character.Growth, character.Weight)); err != nil {
-	//	c.Writer.WriteHeader(http.StatusInternalServerError)
-	//}
 }
 
 func (h Handler) beginActionScene(c *gin.Context) {
-
 	locationFeatures := h.service.Action.GenerateScene()
 
 	if locationFeatures != empty {
@@ -44,7 +37,8 @@ func (h Handler) beginActionScene(c *gin.Context) {
 }
 
 func (h Handler) actionScene(c *gin.Context) {
-	character, ok := h.getSelectedCharacter(c)
+	var actionResult string
+	userId, character, ok := h.getSelectedCharacter(c)
 	if !ok {
 		c.Writer.WriteHeader(http.StatusUnauthorized)
 		return
@@ -59,12 +53,14 @@ func (h Handler) actionScene(c *gin.Context) {
 
 	action := h.unmarshalAction(h.readRespBody(c.Request.Body))
 
-	actionResult := h.service.Action.Jump(character, action.Jump)
+	actionResult, character = h.service.Action.Jump(character, action.Jump)
+	h.updateCookie(c, h.service.UpdateToken(userId, character))
 
 	if action.InAction == "jump" {
 		switch actionResult {
 		case h.utilitiesStr.BadRequest:
 			c.Writer.WriteHeader(http.StatusBadRequest)
+			return
 		default:
 			if _, err := c.Writer.WriteString(actionResult); err != nil {
 				h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
@@ -82,13 +78,13 @@ func (h Handler) unmarshalAction(respBody []byte) model.Action {
 	return Action
 }
 
-func (h Handler) getSelectedCharacter(c *gin.Context) (model.Character, bool) {
+func (h Handler) getSelectedCharacter(c *gin.Context) (int, model.Character, bool) {
 	var character model.Character
 
-	_, ok := c.Get(UserId)
+	userId, ok := c.Get(UserId)
 	if !ok {
 		c.Writer.WriteHeader(http.StatusUnauthorized)
-		return character, false
+		return userId.(int), character, false
 	}
 
 	characterMarshal, _ := c.Get(Character)
@@ -99,5 +95,5 @@ func (h Handler) getSelectedCharacter(c *gin.Context) (model.Character, bool) {
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 	}
 
-	return character, true
+	return userId.(int), character, true
 }

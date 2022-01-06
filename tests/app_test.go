@@ -23,11 +23,9 @@ type templates struct {
 }
 
 type authorization struct {
-
 }
 
 type readAndRequest struct {
-
 }
 
 func (readAndRequest) doRequest(client http.Client, method string, url string, body io.Reader, cookie []*http.Cookie) (*http.Response, []*http.Cookie) {
@@ -39,34 +37,34 @@ func (readAndRequest) doRequest(client http.Client, method string, url string, b
 	return resp, resp.Cookies()
 }
 
-func(readAndRequest) readRespBody(resp *http.Response) []byte {
+func (readAndRequest) readRespBody(resp *http.Response) []byte {
 	bodyBytes, _ := io.ReadAll(resp.Body)
 	return bodyBytes
 }
 
-func(readAndRequest) unmarshalInt(data []byte, log logger.Logger) int {
+func (readAndRequest) unmarshalInt(data []byte, log logger.Logger) int {
 	var beInt int
 	if err := json.Unmarshal(data, &beInt); err != nil {
-		log.Error(err.Error())
+		log.Errorf("%s: %s: %s", log.CallInfoStr(), err.Error(), string(data))
 	}
 
 	return beInt
 }
 
-func(readAndRequest) unmarshalChar(data []byte, log logger.Logger) model.Character {
+func (readAndRequest) unmarshalChar(data []byte, log logger.Logger) model.Character {
 	var char model.Character
 
 	if err := json.Unmarshal(data, &char); err != nil {
-		log.Error(err.Error())
+		log.Errorf("%s: %s: %s", log.CallInfoStr(), err.Error(), string(data))
 	}
 
 	return char
 }
 
-func(readAndRequest) unmarshalChars(data []byte, log logger.Logger) []model.Character {
+func (readAndRequest) unmarshalChars(data []byte, log logger.Logger) []model.Character {
 	var chars []model.Character
 	if err := json.Unmarshal(data, &chars); err != nil {
-		log.Error(err.Error())
+		log.Errorf("%s: %s: %s", log.CallInfoStr(), err.Error(), string(data))
 	}
 
 	return chars
@@ -76,20 +74,20 @@ func loadApiScheme(log logger.Logger) config.Endpoints {
 	var apiScheme config.Endpoints
 	resultJson := <-app.Ch
 	if err := json.Unmarshal(resultJson, &apiScheme); err != nil {
-		log.Error(err.Error())
+		log.Errorf("%s: %s", log.CallInfoStr(), err.Error())
 	}
 	return apiScheme
 }
 
-func loadEnv(log logger.Logger) (config.LogMsg, config.MsgToUser,config.UtilitiesStr) {
+func loadEnv(log logger.Logger) (config.LogMsg, config.MsgToUser, config.CharacterConfig) {
 	re := regexp.MustCompile(`^(.*` + "ArchaicReverie" + `)`)
 	cwd, _ := os.Getwd()
 	rootPath := re.Find([]byte(cwd))
 	godotenv.Load(string(rootPath) + `/.env`)
 	app.YmlFilename = os.Getenv("CONFIG_FILE")
-	logMsg, msgToUser, utilitiesStr, _ := config.InitStrSet(app.YmlFilename, log)
+	logMsg, msgToUser, _, _, charConfig := config.InitStrSet(app.YmlFilename, log)
 
-	return logMsg, msgToUser,utilitiesStr
+	return logMsg, msgToUser, charConfig
 }
 
 func reqBody(log logger.Logger, v interface{}) *bytes.Buffer {

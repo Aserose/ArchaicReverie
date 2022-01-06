@@ -21,7 +21,7 @@ type Authorization interface {
 type Character interface {
 	CreateCharacter(character model.Character) (int, error)
 	GetAllCharacters(userId int) []model.Character
-	GetOne(userId, charId int) model.Character
+	SelectChar(userId, charId int) model.Character
 	Update(character model.Character) error
 	Delete(userId, charId int) error
 	DeleteAll(userId int) error
@@ -29,7 +29,7 @@ type Character interface {
 
 type Action interface {
 	GenerateScene() string
-	Jump(character model.Character, jumpPosition model.Jump) string
+	Jump(character model.Character, jumpPosition model.Jump) (string, model.Character)
 }
 
 type Service struct {
@@ -39,10 +39,10 @@ type Service struct {
 }
 
 func NewService(db *repository.DB, utilitiesStr config.UtilitiesStr, cfgServices *config.CfgServices,
-	msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg) *Service {
+	msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *Service {
 	return &Service{
 		Authorization: authorization.NewServiceAuthorization(db, cfgServices, log, logMsg, msgToUser),
-		Character:     api.NewCharacterService(db, msgToUser),
+		Character:     api.NewCharacterService(db, msgToUser, charConfig),
 		Action:        api.NewActionScene(db, utilitiesStr, msgToUser),
 	}
 }

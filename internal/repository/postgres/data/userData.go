@@ -69,8 +69,8 @@ func (p *PostgresUserData) UpdatePassword(userId int, newPassword string) error 
 	return nil
 }
 
-func (p *PostgresUserData) DeleteAccount(userId int) error {
-	if _, err := p.db.Exec(`DELETE FROM users WHERE id=$1`, userId); err != nil {
+func (p *PostgresUserData) DeleteAccount(userId int, password string) error {
+	if _, err := p.db.Exec(`DELETE FROM users WHERE id=$1 AND password=$2`, userId, password); err != nil {
 		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Delete, err.Error())
 		return err
 	}

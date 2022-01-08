@@ -40,6 +40,7 @@ func (c CharacterService) setChar(userId, charId int) model.Character {
 
 	selectedChar.ThresholdEnergy = c.calculateThresholdMP(selectedChar.Weight)
 	selectedChar.RemainEnergy = selectedChar.ThresholdEnergy
+	selectedChar.CoinAmount = 100
 
 	return selectedChar
 }

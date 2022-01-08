@@ -52,6 +52,8 @@ func (h *Handler) Routes(endpoints config.Endpoints) *gin.Engine {
 			action.GET(endpoints.ActionEndpoints.InfoAboutSelectedChar, h.infoAboutSelectedChar)
 			action.POST(endpoints.ActionEndpoints.BeginActionScene, h.beginActionScene)
 			action.POST(endpoints.ActionEndpoints.ActionScene, h.actionScene)
+			action.POST(endpoints.ActionEndpoints.BeginRepast, h.beginRepast)
+			action.POST(endpoints.ActionEndpoints.Repast, h.repast)
 		}
 	}
 
@@ -61,7 +63,7 @@ func (h *Handler) Routes(endpoints config.Endpoints) *gin.Engine {
 func (h Handler) readRespBody(closer io.ReadCloser) []byte {
 	respBody, err := io.ReadAll(closer)
 	if err != nil {
-		h.log.Errorf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.Read, err.Error())
+		h.log.Errorf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 	}
 
 	return respBody

@@ -63,7 +63,7 @@ func (p *PostgresUserData) Check(username, passwordHash string) (id int, authSta
 
 func (p *PostgresUserData) UpdatePassword(userId int, newPassword string) error {
 	if _, err := p.db.Exec(`UPDATE users SET password=$1 WHERE id=$2`, newPassword, userId); err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Update, err.Error())
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 		return err
 	}
 	return nil
@@ -71,7 +71,7 @@ func (p *PostgresUserData) UpdatePassword(userId int, newPassword string) error 
 
 func (p *PostgresUserData) DeleteAccount(userId int, password string) error {
 	if _, err := p.db.Exec(`DELETE FROM users WHERE id=$1 AND password=$2`, userId, password); err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Delete, err.Error())
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 		return err
 	}
 	return nil

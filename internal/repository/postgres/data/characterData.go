@@ -56,7 +56,7 @@ func (p PostgresCharacterData) ReadAll(userId int) []model.Character {
 	var characters []model.Character
 
 	if err := p.db.Select(&characters, "SELECT * FROM characters WHERE ownerId=$1", userId); err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Read, err.Error())
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 	}
 
 	return characters
@@ -65,7 +65,9 @@ func (p PostgresCharacterData) ReadAll(userId int) []model.Character {
 func (p PostgresCharacterData) ReadOne(userId, charId int) model.Character {
 	var character model.Character
 
-	p.db.Get(&character, "SELECT * FROM characters WHERE ownerId=$1 AND charId=$2", userId, charId)
+	if err := p.db.Get(&character, "SELECT * FROM characters WHERE ownerId=$1 AND charId=$2", userId, charId); err != nil {
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
 
 	return character
 }
@@ -84,7 +86,7 @@ func (p PostgresCharacterData) Update(character model.Character) error {
 	_, err := p.db.Queryx("UPDATE characters SET name=$1,growth=$2,weight=$3 WHERE charId=$4 AND ownerId=$5 ",
 		character.Name, character.Growth, character.Weight, character.CharId, character.OwnerId)
 	if err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Update, err.Error())
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 		return err
 	}
 
@@ -94,7 +96,7 @@ func (p PostgresCharacterData) Update(character model.Character) error {
 func (p PostgresCharacterData) Delete(userId, charId int) error {
 	_, err := p.db.Query("DELETE FROM characters WHERE charId=$1 AND ownerId=$2", charId, userId)
 	if err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Delete, err.Error())
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 		return err
 	}
 
@@ -104,7 +106,7 @@ func (p PostgresCharacterData) Delete(userId, charId int) error {
 func (p PostgresCharacterData) DeleteAll(userId int) error {
 	_, err := p.db.Query("DELETE FROM characters WHERE ownerId=$1", userId)
 	if err != nil {
-		p.log.Errorf(p.logMsg.FormatErr, p.log.CallInfoStr(), p.logMsg.Delete, err.Error())
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 		return err
 	}
 	return nil

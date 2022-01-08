@@ -14,5 +14,10 @@ func TestPostgresEventData(t *testing.T) {
 
 	Convey("generateLocation", t, func() {
 		So(db.EventData.GenerateEventLocation(), ShouldNotBeEmpty)
+
+		Convey("getFood", func() {
+			So(db.EventData.GetFood("apple"),ShouldNotBeEmpty)
+
+		})
 	})
 }

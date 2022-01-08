@@ -26,8 +26,7 @@ func CreateSchemaCharacter(charConfig config.CharacterConfig) string {
 		charConfig.MinCharWeight, charConfig.MaxCharWeight)
 }
 
-var SchemaLocation = ` 
-CREATE TABLE IF NOT EXISTS times (
+var SchemaLocation = `CREATE TABLE IF NOT EXISTS times (
 		name varchar(25) not null unique,
 		clarity smallint
 	); INSERT INTO times (name, clarity) VALUES
@@ -64,4 +63,15 @@ CREATE TABLE IF NOT EXISTS obstacles (
 	ON CONFLICT (name) DO UPDATE SET
 		height = EXCLUDED.height,
 		length = EXCLUDED.length;
+`
+
+var SchemaFood = `CREATE TABLE IF NOT EXISTS foods (
+		name varchar(25) not null unique,
+		price smallint,
+		restore_hp smallint
+	); INSERT INTO foods AS f (name, price, restore_hp) VALUES
+		('apple',3,10),('beef',15,25)
+	ON CONFLICT (name) DO UPDATE SET
+		price = EXCLUDED.price,
+		restore_hp = EXCLUDED.restore_hp;
 `

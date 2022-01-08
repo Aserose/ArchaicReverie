@@ -60,7 +60,7 @@ func loadEnv(logs logger.Logger) (config.LogMsg, config.MsgToUser, *config.CfgPo
 	logMsg, msgToUser, _, _, charConfig := config.InitStrSet(os.Getenv(`CONFIG_FILE`), logs)
 	_, _, cfgPostgres, err := config.Init(os.Getenv("CONFIG_FILE"), logs, logMsg)
 	if err != nil {
-		logs.Errorf(logMsg.FormatErr, logs.CallInfoStr(), logMsg.InitNoOk, err.Error())
+		logs.Errorf(logMsg.Format, logs.CallInfoStr(), err.Error())
 	}
 
 	return logMsg, msgToUser, cfgPostgres, charConfig

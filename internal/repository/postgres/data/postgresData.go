@@ -25,6 +25,8 @@ type CharacterData interface {
 
 type EventData interface {
 	GenerateEventLocation() model.Location
+	GetListFood() []model.Food
+	GetFood(name string) model.Food
 }
 
 type PostgresData struct {

@@ -30,6 +30,8 @@ type Character interface {
 type Action interface {
 	GenerateScene() string
 	Jump(character model.Character, jumpPosition model.Jump) (string, model.Character)
+	GetFoodList() []model.Food
+	Eat(character model.Character, order model.Food) (string, model.Character)
 }
 
 type Service struct {

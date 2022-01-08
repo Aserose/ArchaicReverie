@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"github.com/Aserose/ArchaicReverie/internal/app"
 	"github.com/Aserose/ArchaicReverie/internal/config"
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
@@ -27,7 +28,7 @@ func TestAction(t *testing.T) {
 			testUser        = generateTestUser()
 		)
 
-		cv.Convey("BeginActionScene", func() {
+		cv.Convey("beginActionScene", func() {
 			resp, _ = temp.doRequest(
 				client,
 				strings.Split(apiScheme.ActionEndpoints.BeginActionScene, " ")[0],
@@ -38,6 +39,7 @@ func TestAction(t *testing.T) {
 			cv.So(string(temp.readRespBody(resp)), cv.ShouldNotBeEmpty)
 
 			var result string
+
 			for {
 				resp, updCookie := temp.doRequest(
 					client,
@@ -59,7 +61,10 @@ func TestAction(t *testing.T) {
 					cv.So(result, cv.ShouldEqual, msgToUser.ActionMsg.JumpOver)
 					break
 				}
-
+				if result == msgToUser.ActionMsg.LowHP {
+					cv.So(result,cv.ShouldEqual,"low health points")
+					break
+				}
 				cv.So(result, cv.ShouldNotBeEmpty)
 			}
 
@@ -72,7 +77,37 @@ func TestAction(t *testing.T) {
 					cookie)
 
 				selectedChar := temp.unmarshalChar(temp.readRespBody(resp), logs)
-				logs.Printf("%d health points left out of %d", selectedChar.ThresholdHealth, selectedChar.RemainHealth)
+				logs.Printf("%d health points left out of %d", selectedChar.RemainHealth, selectedChar.ThresholdHealth)
+
+				if selectedChar.RemainHealth < selectedChar.ThresholdHealth {
+					resp, _ = temp.doRequest(
+						client,
+						strings.Split(apiScheme.ActionEndpoints.BeginRepast, " ")[0],
+						strings.Split(apiScheme.ActionEndpoints.BeginRepast, " ")[1],
+						reqBody(logs, testUser),
+						cookie)
+
+					selectedFood := temp.unmarshalFood(temp.readRespBody(resp), logs)
+
+					logs.Printf("restore health by %d points with %s", selectedFood.RestoreHp, selectedFood.Name)
+
+					resp, cookie = temp.doRequest(
+						client,
+						strings.Split(apiScheme.ActionEndpoints.BeginRepast, " ")[0],
+						strings.Split(apiScheme.ActionEndpoints.BeginRepast, " ")[1],
+						reqBody(logs, selectedFood),
+						cookie)
+
+					resp, _ = temp.doRequest(
+						client,
+						strings.Split(apiScheme.ActionEndpoints.InfoAboutSelectedChar, " ")[0],
+						strings.Split(apiScheme.ActionEndpoints.InfoAboutSelectedChar, " ")[1],
+						reqBody(logs, testUser),
+						cookie)
+
+					selectedChar := temp.unmarshalChar(temp.readRespBody(resp), logs)
+					logs.Printf("%d health points left out of %d", selectedChar.RemainHealth, selectedChar.ThresholdHealth)
+				}
 
 				cv.Convey("delete", func() {
 					resp, cookie = temp.doRequest(
@@ -94,6 +129,24 @@ func TestAction(t *testing.T) {
 			})
 		})
 	})
+}
+
+func (r readAndRequest) unmarshalFood(data []byte, log logger.Logger) model.Food {
+	var (
+		foods []model.Food
+		food  model.Food
+	)
+
+	if err := json.Unmarshal(data, &foods); err != nil {
+		log.Errorf("%s:%s", log.CallInfoStr(), err.Error())
+	}
+
+	for _, foo := range foods {
+		if food.Price == 0 || food.Price > foo.Price {
+			food = foo
+		}
+	}
+	return food
 }
 
 func (a authorization) createCharAndSelectChar(client http.Client, apiScheme config.Endpoints, logs logger.Logger, numberCharLimit int) []*http.Cookie {

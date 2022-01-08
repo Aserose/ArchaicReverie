@@ -13,7 +13,6 @@ import (
 type (
 	LogMsg struct {
 		Format                    string `yaml:"formatLog"`
-		FormatErr                 string `yaml:"formatErr"`
 		Init                      string `yaml:"init"`
 		InitOk                    string `yaml:"initOk"`
 		InitNoOk                  string `yaml:"initNoOk"`
@@ -64,6 +63,11 @@ type (
 			LocationFormat string `yaml:"locationFormat"`
 			JumpOver       string `yaml:"jumpOver"`
 			JumpFell       string `yaml:"jumpFell"`
+			RemainHealth string `yaml:"remainHealth"`
+			InvalidSum string `yaml:"invalidSum"`
+			NoNeedToRecover string `yaml:"noNeedToRecover"`
+			InvalidFood string `yaml:"invalidFood"`
+			LowHP string `yaml:"LowHP"`
 		} `yaml:"actionMsg"`
 	}
 	Endpoints struct {
@@ -89,6 +93,8 @@ type (
 			InfoAboutSelectedChar string `yaml:"infoAboutSelectedChar" json:"InfoAboutSelectedChar"`
 			BeginActionScene      string `yaml:"beginActionScene" json:"BeginActionScene"`
 			ActionScene           string `yaml:"actionScene" json:"ActionScene"`
+			BeginRepast           string `yaml:"beginRepast"`
+			Repast                string `yaml:"repast"`
 		} `yaml:"actionEndpoints" json:"ActionEndpoints"`
 	}
 	UtilitiesStr struct {
@@ -172,7 +178,7 @@ func Init(filename string, log logger.Logger, logMsg LogMsg) (*CfgServer, *CfgSe
 	rootPath := re.Find([]byte(cwd))
 
 	if err := godotenv.Load(string(rootPath) + `/.env`); err != nil {
-		log.Errorf(logMsg.FormatErr, log.PackageAndFileNames(), logMsg.Init, err.Error())
+		log.Errorf(logMsg.Format, log.PackageAndFileNames(), err.Error())
 	}
 
 	readEnv(log, logMsg,
@@ -191,7 +197,7 @@ func readEnv(log logger.Logger, logMsg LogMsg, cfgs ...interface{}) {
 	for _, cfg := range cfgs {
 		err := cleanenv.ReadEnv(cfg)
 		if err != nil {
-			log.Errorf(logMsg.FormatErr, log.PackageAndFileNames(), logMsg.InitNoOk)
+			log.Errorf(logMsg.Format, log.PackageAndFileNames(), err.Error())
 		}
 	}
 }

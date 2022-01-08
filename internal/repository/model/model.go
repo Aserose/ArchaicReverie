@@ -63,3 +63,9 @@ type Obstacle struct {
 	Length int    `json:"length" db:"length"`
 	Height int    `json:"height" db:"height"`
 }
+
+type Food struct {
+	Name      string `json:"name" db:"name"`
+	Price     int    `json:"price" db:"price"`
+	RestoreHp int    `json:"restoreHp" db:"restore_hp"`
+}

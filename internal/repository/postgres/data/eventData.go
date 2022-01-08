@@ -1,7 +1,6 @@
 package data
 
 import (
-	"fmt"
 	"github.com/Aserose/ArchaicReverie/internal/config"
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
@@ -22,7 +21,7 @@ func NewEventData(db *sqlx.DB, log logger.Logger, logMsg config.LogMsg) *Postgre
 	}
 }
 
-func (p *PostgresEventData) GenerateEventLocation() model.Location {
+func (p PostgresEventData) GenerateEventLocation() model.Location {
 	event := model.Location{}
 
 	query := `SELECT *
@@ -40,7 +39,7 @@ func (p *PostgresEventData) GenerateEventLocation() model.Location {
 				FROM obstacles o ORDER BY random()) obstacles`
 
 	if err := p.db.Get(&event, query); err != nil {
-		p.log.Panicf(p.logMsg.FormatErr, p.log.CallInfoStr(), fmt.Sprint(p.logMsg.Read, "(generated event)"), err.Error())
+		p.log.Panicf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 	}
 
 	event.TotalSumValues =
@@ -48,4 +47,24 @@ func (p *PostgresEventData) GenerateEventLocation() model.Location {
 			event.Weather.Clarity + event.Weather.DifficultyMovement + event.Obstacle.Length + event.Obstacle.Height
 
 	return event
+}
+
+func (p PostgresEventData) GetListFood() []model.Food {
+	var food []model.Food
+
+	if err := p.db.Select(&food, "SELECT * FROM foods"); err != nil {
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return food
+}
+
+func (p PostgresEventData) GetFood(name string) model.Food {
+	var food model.Food
+
+	if err := p.db.Get(&food, `SELECT * FROM foods WHERE name=$1`, name); err != nil {
+		p.log.Panicf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return food
 }

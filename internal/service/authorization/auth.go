@@ -73,7 +73,7 @@ func (s serviceAuthorization) createToken(userId int, character model.Character)
 
 	tokenString, err := token.SignedString([]byte(s.cfgServices.HMACSecret))
 	if err != nil {
-		s.log.Errorf(s.logMsg.FormatErr, s.log.CallInfoStr(), s.logMsg.CreateToken, err.Error())
+		s.log.Errorf(s.logMsg.Format, s.log.CallInfoStr(), err.Error())
 		return empty
 	}
 
@@ -88,14 +88,14 @@ func (s serviceAuthorization) Verification(tokenString string) (int, model.Chara
 		return []byte(s.cfgServices.HMACSecret), nil
 	})
 	if err != nil {
-		s.log.Errorf(s.logMsg.FormatErr, s.log.CallInfoStr(), s.logMsg.ReadToken, err.Error())
+		s.log.Errorf(s.logMsg.Format, s.log.CallInfoStr(), err.Error())
 		return 0, model.Character{}, err
 	}
 
 	if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
 		return claims.UserId, claims.Character, nil
 	} else {
-		s.log.Errorf(s.logMsg.FormatErr, s.log.CallInfoStr(), s.logMsg.ReadToken, err.Error())
+		s.log.Errorf(s.logMsg.Format, s.log.CallInfoStr(), err.Error())
 		return 0, model.Character{}, err
 	}
 }

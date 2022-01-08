@@ -7,6 +7,7 @@ import (
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"strings"
 )
 
 func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *sqlx.DB {
@@ -20,21 +21,24 @@ func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.
 			cfgPostgres.Password,
 			cfgPostgres.SSLMode))
 	if err != nil {
-		log.Panicf(logMsg.FormatErr, log.CallInfoStr(), logMsg.InitNoOk, err.Error())
+		log.Panicf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
 
-	createTables(db,
+	createTables(db, log,
 		scheme.CreateSchemaUser(charConfig.NumberCharLimit+1),
 		scheme.CreateSchemaCharacter(charConfig),
-		scheme.SchemaLocation)
+		scheme.SchemaLocation,
+		scheme.SchemaFood)
 
 	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.InitOk)
 
 	return db
 }
 
-func createTables(db *sqlx.DB, schemes ...string) {
+func createTables(db *sqlx.DB, log logger.Logger, schemes ...string) {
 	for _, schemeDB := range schemes {
+		log.Infof("%s : %s", log.CallInfoStr(),
+			strings.Replace(strings.Split(schemeDB, `(`)[0], ` IF NOT EXISTS`, ``, 1))
 		db.MustExec(schemeDB)
 	}
 }

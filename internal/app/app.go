@@ -28,7 +28,7 @@ func Start(mode int) {
 
 	cfgServer, cfgServices, cfgPostgres, err := config.Init(YmlFilename, log, logMsg)
 	if err != nil {
-		log.Errorf(logMsg.FormatErr, log.CallInfoStr(), logMsg.InitNoOk, err.Error())
+		log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
 
 	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg, charConfig), msgToUser, log, logMsg, charConfig)
@@ -42,21 +42,28 @@ func Start(mode int) {
 	servers := server.Server{}
 
 	if mode == 1 {
-		getApiScheme(endpoints, handlers.Routes(endpoints).Routes())
+		getApiScheme(endpoints, handlers.Routes(endpoints).Routes(), log)
 	}
 
 	if err := servers.Start(cfgServer.Port, handlers.Routes(endpoints), log, logMsg); err != nil {
-		log.Errorf(logMsg.FormatErr, log.CallInfoStr(), logMsg.InitNoOk, err.Error())
+		log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
 }
 
-func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo) {
+func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo, log logger.Logger) {
 	var toTest map[string]map[string]string
 
-	inrec, _ := json.Marshal(endpoints)
-	json.Unmarshal(inrec, &toTest)
+	inrec, err := json.Marshal(endpoints)
+	if err != nil {
+		log.Errorf("%s %s", log.CallInfoStr(), err.Error())
+	}
+	if err := json.Unmarshal(inrec, &toTest); err != nil {
+		log.Errorf("%s %s", log.CallInfoStr(), err.Error())
+	}
 
-	for i := 0; i <= len(info); i++ {
+	log.Print(len(info))
+
+	for i := 0; i <= len(info)-1; i++ {
 		for field, val := range toTest {
 			for field2, val2 := range val {
 				switch len(strings.Split(info[i].Path, "/")) {
@@ -72,11 +79,7 @@ func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo) {
 							strings.Split(info[i].Path, "/")[2], val2)
 					}
 				}
-
 			}
-		}
-		if i == 13 {
-			break
 		}
 	}
 	resultJson, _ := json.Marshal(toTest)

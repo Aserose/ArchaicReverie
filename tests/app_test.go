@@ -118,12 +118,32 @@ func generateAction() model.Action {
 	return model.Action{
 		InAction: "jump",
 		Jump: model.Jump{
-			SquatDepth:   RandInt(0, 1),
-			ArmAmplitude: RandInt(0, 1),
-			BodyTilt:     RandInt(0, 1),
-			RunUp:        RandInt(0, 1),
+			SquatDepth:   RandIntWithExceptions(-1, 2, 0),
+			ArmAmplitude: RandIntWithExceptions(-1, 2, 0),
+			BodyTilt:     RandIntWithExceptions(-1, 2, 0),
+			RunUp:        RandIntWithExceptions(-1, 2, 0),
 		},
 	}
+}
+
+func RandIntWithExceptions(min,max int,exc ... int) int{
+	rand.Seed(time.Now().UnixNano())
+	result := RandInt(min,max)
+
+	if len(exc)== 1 {
+		for result == exc[0]{
+			result = RandInt(min,max)
+		}
+	} else {
+		for i:=0;i<len(exc);i++ {
+			if result == exc[i] {
+				result = RandInt(min, max)
+				i = 0
+			}
+		}
+	}
+
+	return result
 }
 
 func RandInt(min, max int) int {

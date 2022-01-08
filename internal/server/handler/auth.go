@@ -23,7 +23,7 @@ func (h Handler) signIn(c *gin.Context) {
 	if obtainedCookie != nil {
 		if obtainedCookie.Value != empty {
 			if _, err := c.Writer.WriteString(h.msgToUser.AuthStatus.SignAlready); err != nil {
-				h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+				h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 			}
 			return
 		}
@@ -43,7 +43,7 @@ func (h Handler) signUp(c *gin.Context) {
 	if obtainedCookie != nil {
 		if obtainedCookie.Value != empty {
 			if _, err := c.Writer.WriteString(h.msgToUser.AuthStatus.SignAlready); err != nil {
-				h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+				h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 			}
 			return
 		}
@@ -67,7 +67,7 @@ func (h Handler) updPassword(c *gin.Context) {
 		respBody[username],
 		respBody[password],
 		respBody[newPassword])); err != nil {
-		h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(),err.Error())
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -78,7 +78,7 @@ func (h Handler) deleteAccount(c *gin.Context) {
 	if _, err := c.Writer.WriteString(h.service.Authorization.DeleteAccount(
 		respBody[username],
 		respBody[password])); err != nil {
-		h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+		h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 	}
 }
 
@@ -93,30 +93,31 @@ func (h Handler) setCookie(c *gin.Context, token string, id int) {
 	switch token {
 	case h.msgToUser.AuthStatus.BusyUsername:
 		if _, err := c.Writer.WriteString(token); err != nil {
-			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
 	case h.msgToUser.AuthStatus.UserNotFound:
 		if _, err := c.Writer.WriteString(token); err != nil {
-			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
 	case h.msgToUser.AuthStatus.InvalidPassword:
 		if _, err := c.Writer.WriteString(token); err != nil {
-			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
 	case h.msgToUser.AuthStatus.InvalidUsername:
 		if _, err := c.Writer.WriteString(token); err != nil {
-			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
 	case h.msgToUser.CharStatus.CharNotSelect:
 		if _, err := c.Writer.WriteString(token); err != nil {
-			h.log.Panicf(h.logMsg.FormatErr, h.log.CallInfoStr(), h.logMsg.WriterResponse, err.Error())
+			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
 	default:
 		http.SetCookie(c.Writer, &http.Cookie{
-			Name:    h.utilitiesStr.CookieName,
-			Value:   token,
-			Path:    cookiePath,
-			Expires: time.Now().AddDate(0, 0, 1),
+			Name:     h.utilitiesStr.CookieName,
+			Value:    token,
+			Path:     cookiePath,
+			Expires:  time.Now().AddDate(0, 0, 1),
+			HttpOnly: true,
 		})
 		c.JSON(http.StatusOK, id)
 	}
@@ -124,10 +125,11 @@ func (h Handler) setCookie(c *gin.Context, token string, id int) {
 
 func (h Handler) updateCookie(c *gin.Context, token string) {
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name:    h.utilitiesStr.CookieName,
-		Value:   token,
-		Path:    cookiePath,
-		Expires: time.Now().AddDate(0, 0, 1),
+		Name:     h.utilitiesStr.CookieName,
+		Value:    token,
+		Path:     cookiePath,
+		Expires:  time.Now().AddDate(0, 0, 1),
+		HttpOnly: true,
 	})
 }
 
@@ -150,7 +152,7 @@ func (h Handler) verification(c *gin.Context) {
 
 	marshalCharacter, err := json.Marshal(character)
 	if err != nil {
-		h.log.Errorf(h.logMsg.FormatErr, h.log.CallInfoStr(), err.Error())
+		h.log.Errorf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

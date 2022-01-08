@@ -1,5 +1,4 @@
 formatLog :             "%s: %s"
-formatErr :             "%s: %s: %s"
 init :                  start initialization
 initOk :                initialization ok
 initNoOk :              "initialization error: %s"
@@ -16,7 +15,7 @@ charGrowthOutErr: the growth value is out of range
 charLimitOutErr: you cannot create more than three characters
 charGrowthAndWeightOutErr: the growth and the weight values is out of range
 writerResponse: writing response body
-
+# user authorization status
 authStatus :
   busyUsername :    This username is already taken
   invalidUsername : invalid username
@@ -30,16 +29,16 @@ authStatus :
   error: error
   noCharacter: no character selected
   accountDeleted: account deleted
-
+#
 cookieName :      ArchaicReverieKey
 badRequest : Bad Request
-
+# character creation restrictions
 numberCharLimit: 3
 minCharWeight: 38
 maxCharWeight: 123
 minCharGrowth: 144
 maxCharGrowth: 201
-
+# user character creation status
 charStatus :
   charCreate : "the character is created. Id number: %d"
   charCreateLimit : you cannot create more than three characters
@@ -48,20 +47,25 @@ charStatus :
   charDelete : character deleted
   charAllDelete: all characters deleted
   charNotSelect : no character selected
-  charWeightRange: The weight value must be in the range from 40 to 120 kg.
-  charGrowthRange: The growth value must be in the range from 145 to 200 cm.
+  charWeightRange: "The weight value must be in the range from %d to %d kg."
+  charGrowthRange: "The growth value must be in the range from %d to %d cm."
   charHeadListFormat: "List of created characters\n\n"
   charListFormat: "ID: %d\nName: %s\nGrowth: %d cm.\nWeight: %d\n\n"
-
+# postgres config
 postgresConnectFormat : "user=%s dbname=%s password=%s sslmode=%s"
 driverName :            postgres
 
 actionMsg:
-  locationFormat: "\nplace: %s\nweather: %s\ntime: %s\nobstacle: %s\n"
+  locationFormat: "place: %s , weather: %s , time: %s , obstacle: %s"
   infoCharFormat: "Information about the selected character:\n\nName: %s\nGrowth: %d cm.\nWeight: %d kg."
   jumpOver: you jumped over!
-  jumpFell: you fell
-
+  jumpFell: you fell!
+  remainHealth: "You have %d health points left"
+  invalidSum: invalid sum
+  noNeedToRecover: you are full
+  invalidFood: invalid food
+  lowHP: low health points
+# endpoints
 authEndpoints:
   auth: '/auth'
   signIn: '/signIn'
@@ -82,3 +86,5 @@ actionEndpoints:
   infoAboutSelectedChar: '/infoAboutSelectedChar'
   beginActionScene: '/beginActionScene'
   actionScene: '/actionScene'
+  beginRepast: '/beginRepast'
+  repast: '/repast'

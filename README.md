@@ -13,8 +13,8 @@ API разработано с применением фреймворка Gin.
 Репозиторий: SQL СУБД PostgreSQL
 
 Среди задействованных библиотек имеется: 
-* sqlx (для работы с SQL СУБД PostgreSQL);
-* gin (API);
-* jwt (токен)
-
+* jmoiron/sqlx (для работы с SQL СУБД PostgreSQL);
+* gin-gonic/gin (API);
+* golang-jwt/jwt (токен);
+* /mroth/weightedrand (как часть системы случайной генерации) 
 и так далее. 

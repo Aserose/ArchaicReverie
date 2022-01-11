@@ -20,12 +20,12 @@ func TestPostgresEventData(t *testing.T) {
 			So(db.EventData.GetFood("apple"), ShouldNotBeEmpty)
 
 			Convey("getResult", func() {
-				So(db.EventData.GetActionResult(model.ActionResult{Name: "fall"}),ShouldNotBeEmpty)
+				So(db.EventData.GetActionResult(model.ActionResult{Name: "fall"}), ShouldNotBeEmpty)
 				logs.Print(db.EventData.GetActionResult(model.ActionResult{Name: "fall"}))
 
 				Convey("generateEnemy", func() {
-				So(db.EventData.GenerateEnemy([]model.Enemy{{Class: 1},{Class: 2},{Class: 3}}),ShouldNotBeEmpty)
-				logs.Print(db.EventData.GenerateEnemy([]model.Enemy{{Class: 1},{Class: 2},{Class: 3}}))
+					So(db.EventData.GenerateEnemy([]model.Enemy{{Class: 1}, {Class: 2}, {Class: 3}}), ShouldNotBeEmpty)
+					logs.Print(db.EventData.GenerateEnemy([]model.Enemy{{Class: 1}, {Class: 2}, {Class: 3}}))
 				})
 			})
 		})

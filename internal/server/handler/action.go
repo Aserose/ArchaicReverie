@@ -28,7 +28,7 @@ func (h Handler) infoAboutSelectedChar(c *gin.Context) {
 func (h Handler) beginActionScene(c *gin.Context) {
 	locationFeatures := h.service.Action.GenerateScene()
 	if locationFeatures != nil {
-		c.JSON(http.StatusOK,locationFeatures)
+		c.JSON(http.StatusOK, locationFeatures)
 	} else {
 		h.actionScene(c)
 	}

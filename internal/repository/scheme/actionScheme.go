@@ -63,7 +63,6 @@ var SchemaDamageAndResult = `CREATE TABLE IF NOT EXISTS action_result (
 			damage_hp = EXCLUDED.damage_hp,
 			damage_mp = EXCLUDED.damage_mp;`
 
-
 var SchemaEnemy = `CREATE TABLE IF NOT EXISTS enemy (
 		name char(25) PRIMARY KEY,
 		class smallint

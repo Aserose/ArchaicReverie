@@ -45,6 +45,6 @@ func NewService(db *repository.DB, utilitiesStr config.UtilitiesStr, cfgServices
 	return &Service{
 		Authorization: authorization.NewServiceAuthorization(db, cfgServices, log, logMsg, msgToUser),
 		Character:     api.NewCharacterService(db, msgToUser, charConfig),
-		Action:        api.NewActionScene(db, utilitiesStr, log,msgToUser),
+		Action:        api.NewActionScene(db, utilitiesStr, log, msgToUser),
 	}
 }

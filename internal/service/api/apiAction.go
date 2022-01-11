@@ -18,15 +18,15 @@ type ActionScene struct {
 	locationScene model.Location
 	enemy         []model.Enemy
 	menuFood      []model.Food
-	log logger.Logger
+	log           logger.Logger
 	msgToUser     config.MsgToUser
 }
 
-func NewActionScene(db *repository.DB, utilitiesStr config.UtilitiesStr,log logger.Logger, msgToUser config.MsgToUser) *ActionScene {
+func NewActionScene(db *repository.DB, utilitiesStr config.UtilitiesStr, log logger.Logger, msgToUser config.MsgToUser) *ActionScene {
 	return &ActionScene{
 		db:           db,
 		utilitiesStr: utilitiesStr,
-		log:log,
+		log:          log,
 		msgToUser:    msgToUser,
 	}
 }
@@ -34,27 +34,26 @@ func NewActionScene(db *repository.DB, utilitiesStr config.UtilitiesStr,log logg
 func (a *ActionScene) GenerateScene() map[string]interface{} {
 	var (
 		chooser *wr.Chooser
-		err error
+		err     error
 	)
 
 	if a.locationScene == (model.Location{}) && len(a.enemy) == 0 {
 		var result map[string]interface{}
 
-		if chooser,err = wr.NewChooser(
-			wr.Choice{Item: func()map[string]interface{}{
+		if chooser, err = wr.NewChooser(
+			wr.Choice{Item: func() map[string]interface{} {
 				a.locationScene = a.db.Postgres.EventData.GenerateEventLocation()
-			result = map[string]interface{}{"location":a.locationScene}
-			return result
+				result = map[string]interface{}{"location": a.locationScene}
+				return result
 			}(), Weight: 5},
 
-			wr.Choice{Item: func()map[string]interface{}{
+			wr.Choice{Item: func() map[string]interface{} {
 				a.locationScene = a.db.Postgres.EventData.GenerateEventLocation()
 				a.enemy = a.db.Postgres.EventData.GenerateEnemy(generateSettingEnemy())
-				result = map[string]interface{}{"location":a.locationScene,"enemy":a.enemy}
+				result = map[string]interface{}{"location": a.locationScene, "enemy": a.enemy}
 				return result
-			}(), Weight: 5})
-		err != nil {
-			a.log.Errorf("%s:%s",a.log.CallInfoStr(),err.Error())
+			}(), Weight: 5}); err != nil {
+			a.log.Errorf("%s:%s", a.log.CallInfoStr(), err.Error())
 		}
 
 		chooser.Pick()
@@ -64,18 +63,18 @@ func (a *ActionScene) GenerateScene() map[string]interface{} {
 	return nil
 }
 
-func generateSettingEnemy() []model.Enemy{
+func generateSettingEnemy() []model.Enemy {
 	enemies := []model.Enemy{}
 
-	for i:=0;i<=RandInt(1,4,i);i++ {
-		enemies = append(enemies, model.Enemy{Class: RandInt(1,4,i)})
+	for i := 0; i <= RandInt(1, 4, i); i++ {
+		enemies = append(enemies, model.Enemy{Class: RandInt(1, 4, i)})
 	}
 
 	return enemies
 }
 
 func RandInt(min, max, add int) int {
-	rand.Seed(time.Now().UnixNano()+int64(add))
+	rand.Seed(time.Now().UnixNano() + int64(add))
 	return rand.Intn(max-min) + min
 }
 

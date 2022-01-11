@@ -29,4 +29,3 @@ var SchemaFood = `CREATE TABLE IF NOT EXISTS foods (
 		price = EXCLUDED.price,
 		restore_hp = EXCLUDED.restore_hp;
 `
-

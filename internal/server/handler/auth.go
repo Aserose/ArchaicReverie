@@ -67,7 +67,7 @@ func (h Handler) updPassword(c *gin.Context) {
 		respBody[username],
 		respBody[password],
 		respBody[newPassword])); err != nil {
-		h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(),err.Error())
+		h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 	}
 }

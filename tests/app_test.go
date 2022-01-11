@@ -126,16 +126,16 @@ func generateAction() model.Action {
 	}
 }
 
-func RandIntWithExceptions(min,max int,exc ... int) int{
+func RandIntWithExceptions(min, max int, exc ...int) int {
 	rand.Seed(time.Now().UnixNano())
-	result := RandInt(min,max)
+	result := RandInt(min, max)
 
-	if len(exc)== 1 {
-		for result == exc[0]{
-			result = RandInt(min,max)
+	if len(exc) == 1 {
+		for result == exc[0] {
+			result = RandInt(min, max)
 		}
 	} else {
-		for i:=0;i<len(exc);i++ {
+		for i := 0; i < len(exc); i++ {
 			if result == exc[i] {
 				result = RandInt(min, max)
 				i = 0

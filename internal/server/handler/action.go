@@ -27,10 +27,8 @@ func (h Handler) infoAboutSelectedChar(c *gin.Context) {
 
 func (h Handler) beginActionScene(c *gin.Context) {
 	locationFeatures := h.service.Action.GenerateScene()
-	if locationFeatures != empty {
-		if _, err := c.Writer.WriteString(locationFeatures); err != nil {
-			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
-		}
+	if locationFeatures != nil {
+		c.JSON(http.StatusOK,locationFeatures)
 	} else {
 		h.actionScene(c)
 	}
@@ -60,14 +58,15 @@ func (h Handler) repast(c *gin.Context) {
 	}
 
 	var status string
-	order := unmarshalOrder(h.readRespBody(c.Request.Body),h.log)
+	order := unmarshalOrder(h.readRespBody(c.Request.Body), h.log)
 
 	status, character = h.service.Action.Eat(character, order)
 	h.updateCookie(c, h.service.UpdateToken(userId, character))
 
 	if status != empty {
-		_, err := c.Writer.WriteString(status); if err != nil {
-			h.log.Errorf(h.logMsg.Format,h.log.CallInfoStr(),err.Error())
+		_, err := c.Writer.WriteString(status)
+		if err != nil {
+			h.log.Errorf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
 	} else {
 		return
@@ -75,11 +74,11 @@ func (h Handler) repast(c *gin.Context) {
 
 }
 
-func unmarshalOrder(respBody []byte,log logger.Logger) model.Food {
+func unmarshalOrder(respBody []byte, log logger.Logger) model.Food {
 	var order model.Food
 
 	if err := json.Unmarshal(respBody, &order); err != nil {
-		log.Errorf("%s:%s",log.CallInfoStr(),err.Error)
+		log.Errorf("%s:%s", log.CallInfoStr(), err.Error)
 	}
 
 	return order
@@ -122,7 +121,7 @@ func (h Handler) unmarshalAction(respBody []byte, log logger.Logger) model.Actio
 	var action model.Action
 
 	if err := json.Unmarshal(respBody, &action); err != nil {
-		log.Errorf("%s:%s",log.CallInfoStr(), err.Error())
+		log.Errorf("%s:%s", log.CallInfoStr(), err.Error())
 	}
 
 	return action

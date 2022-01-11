@@ -3,7 +3,7 @@ package postgres
 import (
 	"fmt"
 	"github.com/Aserose/ArchaicReverie/internal/config"
-	"github.com/Aserose/ArchaicReverie/internal/repository/model/scheme"
+	"github.com/Aserose/ArchaicReverie/internal/repository/scheme"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -28,7 +28,10 @@ func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.
 		scheme.CreateSchemaUser(charConfig.NumberCharLimit+1),
 		scheme.CreateSchemaCharacter(charConfig),
 		scheme.SchemaLocation,
-		scheme.SchemaFood)
+		scheme.SchemaFood,
+		scheme.SchemaDamageAndResult,
+		scheme.SchemaWeaponAndInventory,
+		scheme.SchemaEnemy)
 
 	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.InitOk)
 

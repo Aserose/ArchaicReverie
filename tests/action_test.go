@@ -62,7 +62,7 @@ func TestAction(t *testing.T) {
 					break
 				}
 				if result == msgToUser.ActionMsg.LowHP {
-					cv.So(result,cv.ShouldEqual,"low health points")
+					cv.So(result, cv.ShouldEqual, "low health points")
 					break
 				}
 				cv.So(result, cv.ShouldNotBeEmpty)

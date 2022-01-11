@@ -1,31 +1,5 @@
 package scheme
 
-import (
-	"fmt"
-	"github.com/Aserose/ArchaicReverie/internal/config"
-)
-
-func CreateSchemaUser(numberCharLimit int) string {
-	return fmt.Sprintf(`CREATE TABLE IF NOT EXISTS users (
-		id serial PRIMARY KEY,
-		username varchar(255) not null unique,
-		password varchar(255) not null,
-		numberOfCharacters smallint CHECK (numberOfCharacters < %d)
-	);`, numberCharLimit)
-}
-
-func CreateSchemaCharacter(charConfig config.CharacterConfig) string {
-	return fmt.Sprintf(`CREATE TABLE IF NOT EXISTS characters (
-		charId serial not null unique,
-		ownerId integer not null,
-		name varchar(255) not null,
-		growth smallint CHECK (growth>%d) CHECK (growth<%d),
-		weight smallint CHECK (weight>%d) CHECK (weight<%d),
-			FOREIGN KEY (ownerId) REFERENCES users (id) ON DELETE CASCADE
-	);`, charConfig.MinCharGrowth, charConfig.MaxCharGrowth,
-		charConfig.MinCharWeight, charConfig.MaxCharWeight)
-}
-
 var SchemaLocation = `CREATE TABLE IF NOT EXISTS times (
 		name varchar(25) not null unique,
 		clarity smallint
@@ -65,13 +39,36 @@ CREATE TABLE IF NOT EXISTS obstacles (
 		length = EXCLUDED.length;
 `
 
-var SchemaFood = `CREATE TABLE IF NOT EXISTS foods (
-		name varchar(25) not null unique,
-		price smallint,
-		restore_hp smallint
-	); INSERT INTO foods AS f (name, price, restore_hp) VALUES
-		('apple',3,10),('beef',15,25)
-	ON CONFLICT (name) DO UPDATE SET
-		price = EXCLUDED.price,
-		restore_hp = EXCLUDED.restore_hp;
-`
+var SchemaDamageAndResult = `CREATE TABLE IF NOT EXISTS action_result (
+		name varchar(25) PRIMARY KEY
+	);
+	CREATE TABLE IF NOT EXISTS damage_type (
+		name varchar(25) UNIQUE,
+		damage_hp smallint,
+		damage_mp smallint,
+			FOREIGN KEY (name) REFERENCES action_result (name) ON DELETE CASCADE
+	);
+	WITH actionInfo(name, damage_hp, damage_mp) AS (
+		VALUES ('fall', 10, 0)),
+		ins1 AS (
+		INSERT INTO action_result (name)
+		SELECT name FROM actionInfo
+			ON CONFLICT DO NOTHING
+			RETURNING name)
+		INSERT INTO damage_type (name, damage_hp, damage_mp)
+		SELECT ins1.name, a.damage_hp, a.damage_mp
+		FROM actionInfo a
+		JOIN ins1 USING (name)
+		ON CONFLICT (name) DO UPDATE SET
+			damage_hp = EXCLUDED.damage_hp,
+			damage_mp = EXCLUDED.damage_mp;`
+
+
+var SchemaEnemy = `CREATE TABLE IF NOT EXISTS enemy (
+		name char(25) PRIMARY KEY,
+		class smallint
+	);
+		INSERT INTO enemy AS e (name, class) VALUES
+			('hooligan',2), ('yakuza',1), ('drunkard',3)
+		ON CONFLICT (name) DO UPDATE SET
+			class = EXCLUDED.class`

@@ -27,6 +27,8 @@ type EventData interface {
 	GenerateEventLocation() model.Location
 	GetListFood() []model.Food
 	GetFood(name string) model.Food
+	GetActionResult(actionResult model.ActionResult) model.ActionResult
+	GenerateEnemy(settingEnemy []model.Enemy) []model.Enemy
 }
 
 type PostgresData struct {

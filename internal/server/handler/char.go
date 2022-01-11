@@ -16,7 +16,7 @@ func (h Handler) createChar(c *gin.Context) {
 		return
 	}
 
-	creatingChar := unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int),h.log)
+	creatingChar := unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int), h.log)
 
 	charId, err := h.service.CreateCharacter(creatingChar)
 	if err != nil {
@@ -62,16 +62,6 @@ func (h Handler) getAllChar(c *gin.Context) {
 		return
 	}
 
-	//formatted response
-	//var headerList = h.msgToUser.CharStatus.CharHeadListFormat
-	//for _, character := range h.service.GetAllCharacters(userId.(int)) {
-	//	headerList += fmt.Sprintf(h.msgToUser.CharStatus.CharListFormat,
-	//		character.CharId,
-	//		character.Name,
-	//		character.Growth,
-	//		character.Weight)
-	//}
-
 	c.JSON(http.StatusOK, h.service.GetAllCharacters(userId.(int)))
 
 }
@@ -83,7 +73,7 @@ func (h Handler) selectChar(c *gin.Context) {
 		return
 	}
 
-	selectedCharId := unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int),h.log).CharId
+	selectedCharId := unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int), h.log).CharId
 
 	h.setCookie(c, h.service.Authorization.UpdateToken(
 		userId.(int), h.service.Character.SelectChar(
@@ -98,7 +88,7 @@ func (h Handler) updChar(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Character.Update(unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int),h.log)); err != nil {
+	if err := h.service.Character.Update(unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int), h.log)); err != nil {
 		switch err.Error() {
 		case h.logMsg.CharGrowthOutErr:
 			if _, err := c.Writer.WriteString(h.msgToUser.CharStatus.CharGrowthRange); err != nil {
@@ -128,7 +118,7 @@ func (h Handler) delChar(c *gin.Context) {
 		return
 	}
 
-	if err := h.service.Character.Delete(userId.(int), unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int),h.log).CharId); err != nil {
+	if err := h.service.Character.Delete(userId.(int), unmarshalRespCharacter(h.readRespBody(c.Request.Body), userId.(int), h.log).CharId); err != nil {
 		c.Writer.WriteHeader(http.StatusInternalServerError)
 		return
 	}

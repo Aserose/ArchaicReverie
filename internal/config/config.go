@@ -59,15 +59,15 @@ type (
 			Error           string `yaml:"error"`
 		} `yaml:"authStatus"`
 		ActionMsg struct {
-			InfoCharFormat string `yaml:"infoCharFormat"`
-			LocationFormat string `yaml:"locationFormat"`
-			JumpOver       string `yaml:"jumpOver"`
-			JumpFell       string `yaml:"jumpFell"`
-			RemainHealth string `yaml:"remainHealth"`
-			InvalidSum string `yaml:"invalidSum"`
+			InfoCharFormat  string `yaml:"infoCharFormat"`
+			LocationFormat  string `yaml:"locationFormat"`
+			JumpOver        string `yaml:"jumpOver"`
+			JumpFell        string `yaml:"jumpFell"`
+			RemainHealth    string `yaml:"remainHealth"`
+			InvalidSum      string `yaml:"invalidSum"`
 			NoNeedToRecover string `yaml:"noNeedToRecover"`
-			InvalidFood string `yaml:"invalidFood"`
-			LowHP string `yaml:"LowHP"`
+			InvalidFood     string `yaml:"invalidFood"`
+			LowHP           string `yaml:"LowHP"`
 		} `yaml:"actionMsg"`
 	}
 	Endpoints struct {

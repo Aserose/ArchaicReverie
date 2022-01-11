@@ -28,7 +28,7 @@ type Character interface {
 }
 
 type Action interface {
-	GenerateScene() string
+	GenerateScene() map[string]interface{}
 	Jump(character model.Character, jumpPosition model.Jump) (string, model.Character)
 	GetFoodList() []model.Food
 	Eat(character model.Character, order model.Food) (string, model.Character)
@@ -45,6 +45,6 @@ func NewService(db *repository.DB, utilitiesStr config.UtilitiesStr, cfgServices
 	return &Service{
 		Authorization: authorization.NewServiceAuthorization(db, cfgServices, log, logMsg, msgToUser),
 		Character:     api.NewCharacterService(db, msgToUser, charConfig),
-		Action:        api.NewActionScene(db, utilitiesStr, msgToUser),
+		Action:        api.NewActionScene(db, utilitiesStr, log,msgToUser),
 	}
 }

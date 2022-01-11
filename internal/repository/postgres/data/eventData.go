@@ -5,6 +5,8 @@ import (
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 	"github.com/jmoiron/sqlx"
+	"math/rand"
+	"time"
 )
 
 type PostgresEventData struct {
@@ -49,6 +51,20 @@ func (p PostgresEventData) GenerateEventLocation() model.Location {
 	return event
 }
 
+func (p PostgresEventData) GetActionResult(actionResult model.ActionResult) model.ActionResult {
+
+	row := p.db.QueryRowx(`SELECT a.name, d.damage_hp "damage_type.damage_hp", d.damage_mp "damage_type.damage_mp"
+							FROM action_result a
+							JOIN damage_type d ON (a.name = d.name)
+							WHERE a.name = $1`, actionResult.Name)
+
+	if err := row.StructScan(&actionResult); err != nil {
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return actionResult
+}
+
 func (p PostgresEventData) GetListFood() []model.Food {
 	var food []model.Food
 
@@ -59,6 +75,35 @@ func (p PostgresEventData) GetListFood() []model.Food {
 	return food
 }
 
+func (p PostgresEventData) GenerateEnemy(settingEnemy []model.Enemy) []model.Enemy {
+	enemies := []model.Enemy{}
+	classWeapProb := map[int][]int{
+		1: {90, 70, 0},
+		2: {70, 30, 85},
+		3: {15, 80, 90},
+	}
+
+	for _, enemy := range settingEnemy {
+		row := p.db.QueryRowx(`SELECT * FROM
+								(SELECT a.name "name" FROM enemy a WHERE class=$1) enemy
+								    NATURAL FULL JOIN
+								(SELECT b.name "weapon.name",b.sharp "weapon.sharp", b.weight "weapon.weight" FROM weapon b WHERE weapon_class=$2 
+									ORDER BY random()) weapon`,
+			enemy.Class, weaponSpawnProbability(
+				classWeapProb[enemy.Class][0],
+				classWeapProb[enemy.Class][1],
+				classWeapProb[enemy.Class][2]))
+
+		if err := row.StructScan(&enemy); err != nil {
+			p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+		}
+		enemy.CoinAmount = generateCoins(enemy.Class)
+		enemies = append(enemies, enemy)
+	}
+
+	return enemies
+}
+
 func (p PostgresEventData) GetFood(name string) model.Food {
 	var food model.Food
 
@@ -67,4 +112,34 @@ func (p PostgresEventData) GetFood(name string) model.Food {
 	}
 
 	return food
+}
+
+func generateCoins(class int) int {
+	switch class {
+	case 3:
+		return randInt(0, 10)
+	case 2:
+		return randInt(5, 15)
+	case 1:
+		return randInt(10, 20)
+	}
+	return 0
+}
+
+func weaponSpawnProbability(a, b, c int) int {
+	weaponSpawnProbability := randInt(0, 100)
+
+	if weaponSpawnProbability > a {
+		return 3
+	} else if weaponSpawnProbability > b {
+		return 2
+	} else if weaponSpawnProbability > c {
+		return 1
+	}
+	return 0
+}
+
+func randInt(min, max int) int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Intn(max-min) + min
 }

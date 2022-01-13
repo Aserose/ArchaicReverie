@@ -1,4 +1,4 @@
-package api
+package action
 
 import (
 	"github.com/Aserose/ArchaicReverie/internal/config"

@@ -27,6 +27,7 @@ func (h Handler) infoAboutSelectedChar(c *gin.Context) {
 
 func (h Handler) beginActionScene(c *gin.Context) {
 	locationFeatures := h.service.Action.GenerateScene()
+
 	if locationFeatures != nil {
 		c.JSON(http.StatusOK, locationFeatures)
 	} else {
@@ -101,8 +102,8 @@ func (h Handler) actionScene(c *gin.Context) {
 
 	action := h.unmarshalAction(h.readRespBody(c.Request.Body), h.log)
 
-	if action.InAction == "jump" {
-		actionResult, character = h.service.Action.Jump(character, action.Jump)
+	if action.InAction != empty {
+		actionResult, character = h.service.Action.Action(character, action)
 		h.updateCookie(c, h.service.UpdateToken(userId, character))
 		switch actionResult {
 		case h.utilitiesStr.BadRequest:

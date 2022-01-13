@@ -23,7 +23,7 @@ func TestAction(t *testing.T) {
 			temp            templates
 			numberCharLimit = charConfig.NumberCharLimit
 			client          = http.Client{}
-			cookie          = temp.authorization.createCharAndSelectChar(client, apiScheme, logs, numberCharLimit)
+			cookie          = temp.authorization.createCharsAndSelect(client, apiScheme, logs, numberCharLimit)
 			resp            *http.Response
 			testUser        = generateTestUser()
 		)
@@ -149,7 +149,7 @@ func (r readAndRequest) unmarshalFood(data []byte, log logger.Logger) model.Food
 	return food
 }
 
-func (a authorization) createCharAndSelectChar(client http.Client, apiScheme config.Endpoints, logs logger.Logger, numberCharLimit int) []*http.Cookie {
+func (a authorization) createCharsAndSelect(client http.Client, apiScheme config.Endpoints, logs logger.Logger, numberCharLimit int) []*http.Cookie {
 	cookie, chars := a.authorizeUserWithChars(client, apiScheme, logs, numberCharLimit)
 	var temp templates
 	_, cookie = temp.doRequest(

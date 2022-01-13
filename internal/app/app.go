@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	YmlFilename = "configs/config.yml"
-	Ch          = make(chan []byte)
+	YmlFilename           = "configs/config.yml"
+	YmlGenerationFilename = "configs/generationConfig.yml"
+	Ch                    = make(chan []byte)
 )
 
 func Start(mode int) {
@@ -31,11 +32,13 @@ func Start(mode int) {
 		log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
 
+	cfgGeneration := config.InitGenerationConfig(YmlGenerationFilename, log)
+
 	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg, charConfig), msgToUser, log, logMsg, charConfig)
 
 	db := repository.NewDB(postgresData)
 
-	services := service.NewService(db, utilitiesStr, cfgServices, msgToUser, log, logMsg, charConfig)
+	services := service.NewService(db, utilitiesStr, cfgServices, msgToUser, log, logMsg, charConfig, cfgGeneration)
 
 	handlers := handler.NewHandler(services, utilitiesStr, msgToUser, log, logMsg)
 
@@ -61,8 +64,6 @@ func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo, log logger.Lo
 		log.Errorf("%s %s", log.CallInfoStr(), err.Error())
 	}
 
-	log.Print(len(info))
-
 	for i := 0; i <= len(info)-1; i++ {
 		for field, val := range toTest {
 			for field2, val2 := range val {
@@ -83,6 +84,7 @@ func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo, log logger.Lo
 		}
 	}
 	resultJson, _ := json.Marshal(toTest)
+
 	Ch <- resultJson
 	close(Ch)
 }

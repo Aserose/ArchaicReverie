@@ -3,6 +3,8 @@ package model
 type Action struct {
 	InAction string `json:"inAction"`
 	Jump     `json:"jump"`
+	Run      `json:"run"`
+	Hit      `json:"hit"`
 }
 
 type Jump struct {
@@ -10,6 +12,15 @@ type Jump struct {
 	ArmAmplitude int `json:"armAmplitude"`
 	BodyTilt     int `json:"bodyTilt"`
 	RunUp        int `json:"runUp"`
+}
+
+type Run struct {
+	BodyTilt int `json:"bodyTilt"`
+}
+
+type Hit struct {
+	Backswing int `json:"backswing"`
+	Straight  int `json:"straight"`
 }
 
 type ActionResult struct {

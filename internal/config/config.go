@@ -89,7 +89,7 @@ type (
 			DelAllChar string `yaml:"delAllChar" json:"DelAllChar"`
 		} `yaml:"apiEndpoints" json:"ApiEndpoints"`
 		ActionEndpoints struct {
-			Action                string `yaml:"api" json:"Action"`
+			Action                string `yaml:"action" json:"Action"`
 			InfoAboutSelectedChar string `yaml:"infoAboutSelectedChar" json:"InfoAboutSelectedChar"`
 			BeginActionScene      string `yaml:"beginActionScene" json:"BeginActionScene"`
 			ActionScene           string `yaml:"actionScene" json:"ActionScene"`

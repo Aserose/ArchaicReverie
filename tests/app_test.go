@@ -85,6 +85,7 @@ func loadEnv(log logger.Logger) (config.LogMsg, config.MsgToUser, config.Charact
 	rootPath := re.Find([]byte(cwd))
 	godotenv.Load(string(rootPath) + `/.env`)
 	app.YmlFilename = os.Getenv("CONFIG_FILE")
+	app.YmlGenerationFilename = os.Getenv("GENERATION_CONFIG")
 	logMsg, msgToUser, _, _, charConfig := config.InitStrSet(app.YmlFilename, log)
 
 	return logMsg, msgToUser, charConfig

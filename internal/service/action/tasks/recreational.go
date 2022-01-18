@@ -11,7 +11,6 @@ import (
 
 type recreational struct {
 	db         *repository.DB
-	character  model.Character
 	menuFood   []model.Food
 	weaponList []model.Weapon
 	charCfg    config.CharacterConfig

@@ -1,0 +1,25 @@
+# values for conversion
+conversion:
+  baseHP: 100
+  addHP: 10
+  baseMP: 50
+  addMP: 10
+  baseAmountCoin: 100
+# character creation restrictions (weight in kg, height in cm)
+restriction:
+  numberCharLimit: 3
+  minCharWeight: 38
+  maxCharWeight: 123
+  minCharGrowth: 144
+  maxCharGrowth: 201
+  weaponInventorySize: 3
+#enemy generation settings (max class - 4)
+generationEnemy:
+  minQuantityOfEnemies: 1
+  maxQuantityOfEnemies: 4
+  minClassOfEnemy: 1
+  maxClassOfEnemy: 4
+#type of task
+typeOfTask:
+  location: 5
+  locationWithEnemy: 0

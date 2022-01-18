@@ -2,7 +2,6 @@ package tests
 
 import (
 	"github.com/Aserose/ArchaicReverie/internal/app"
-	"github.com/Aserose/ArchaicReverie/internal/config"
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 	cv "github.com/smartystreets/goconvey/convey"
@@ -21,12 +20,12 @@ func TestChar(t *testing.T) {
 		var (
 			client          = http.Client{}
 			resp            *http.Response
-			numberCharLimit = charConfig.NumberCharLimit
-			temp            templates
+			numberCharLimit = charConfig.Restriction.NumberCharLimit
+			temp            = NewTemplates(logs)
 		)
 
 		cv.Convey("authorize", func() {
-			testUser, cookie := temp.authorizeUser(client, apiScheme, logs)
+			testUser, cookie := temp.authorizeUser(client, apiScheme)
 
 			cv.Convey("createChars", func() {
 				var chars []model.Character
@@ -40,7 +39,7 @@ func TestChar(t *testing.T) {
 						reqBody(logs, chars[i]),
 						cookie)
 
-					chars[i].CharId = temp.unmarshalChar(temp.readRespBody(resp), logs).CharId
+					chars[i].CharId = temp.unmarshalChar(temp.readRespBody(resp)).CharId
 					cv.So(chars[i].CharId, cv.ShouldNotBeZeroValue)
 				}
 
@@ -65,10 +64,12 @@ func TestChar(t *testing.T) {
 							reqBody(logs, testUser),
 							cookie)
 
-						receiveChars := temp.unmarshalChars(temp.readRespBody(resp), logs)
+						receiveChars := temp.unmarshalChars(temp.readRespBody(resp))
 
+						logs.Print("list of created characters: ")
 						for i := 0; i <= len(chars)-1; i++ {
 							cv.So(receiveChars[i], cv.ShouldResemble, chars[i])
+							logs.Print(receiveChars[i])
 						}
 
 						cv.Convey("updChar", func() {
@@ -100,7 +101,7 @@ func TestChar(t *testing.T) {
 									reqBody(logs, testUser),
 									cookie)
 
-								receiveChars = temp.unmarshalChars(temp.readRespBody(resp), logs)
+								receiveChars = temp.unmarshalChars(temp.readRespBody(resp))
 								cv.So(len(chars), cv.ShouldNotEqual, len(receiveChars))
 
 								cv.Convey("createForbiddenChar", func() {
@@ -148,7 +149,7 @@ func TestChar(t *testing.T) {
 											reqBody(logs, chars[0]),
 											cookie)
 
-										cv.So(temp.unmarshalInt(temp.readRespBody(resp), logs), cv.ShouldEqual, chars[0].CharId)
+										cv.So(temp.unmarshalInt(temp.readRespBody(resp)), cv.ShouldEqual, chars[0].CharId)
 
 										cv.Convey("delete", func() {
 											resp, cookie = temp.doRequest(
@@ -176,23 +177,4 @@ func TestChar(t *testing.T) {
 			})
 		})
 	})
-}
-
-func (a authorization) authorizeUser(client http.Client, apiScheme config.Endpoints, logs logger.Logger) (model.User, []*http.Cookie) {
-	var (
-		resp     *http.Response
-		cookie   []*http.Cookie
-		testUser = generateTestUser()
-		temp     templates
-	)
-
-	resp, cookie = temp.doRequest(
-		client,
-		strings.Split(apiScheme.AuthEndpoints.SignUp, " ")[0],
-		strings.Split(apiScheme.AuthEndpoints.SignUp, " ")[1], reqBody(logs, testUser),
-		cookie)
-
-	testUser.Id = temp.unmarshalInt(temp.readRespBody(resp), logs)
-
-	return testUser, cookie
 }

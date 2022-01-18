@@ -25,7 +25,7 @@ func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.
 	}
 
 	createTables(db, log,
-		scheme.CreateSchemaUser(charConfig.NumberCharLimit+1),
+		scheme.CreateSchemaUser(charConfig.Restriction.NumberCharLimit+1),
 		scheme.CreateSchemaCharacter(charConfig),
 		scheme.SchemaLocation,
 		scheme.SchemaFood,

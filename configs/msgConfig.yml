@@ -1,3 +1,4 @@
+# log messages
 formatLog :             "%s: %s"
 init :                  start initialization
 initOk :                initialization ok
@@ -10,12 +11,8 @@ createToken :           creating token error
 readToken :             reading token error
 unmarshal :             unmarshal json
 marshal :               marshal json
-charWeightOutErr: the weight value is out of range
-charGrowthOutErr: the growth value is out of range
-charLimitOutErr: you cannot create more than three characters
-charGrowthAndWeightOutErr: the growth and the weight values is out of range
 writerResponse: writing response body
-# user authorization status
+# authorization status messages
 authStatus :
   busyUsername :    This username is already taken
   invalidUsername : invalid username
@@ -29,15 +26,13 @@ authStatus :
   error: error
   noCharacter: no character selected
   accountDeleted: account deleted
-#
+# service messages
+charWeightOutErr: the weight value is out of range
+charGrowthOutErr: the growth value is out of range
+charLimitOutErr: you cannot create more than three characters
+charGrowthAndWeightOutErr: the growth and the weight values is out of range
 cookieName :      ArchaicReverieKey
 badRequest : Bad Request
-# character creation restrictions
-numberCharLimit: 3
-minCharWeight: 38
-maxCharWeight: 123
-minCharGrowth: 144
-maxCharGrowth: 201
 # user character creation status
 charStatus :
   charCreate : "the character is created. Id number: %d"
@@ -51,10 +46,7 @@ charStatus :
   charGrowthRange: "The growth value must be in the range from %d to %d cm."
   charHeadListFormat: "List of created characters\n\n"
   charListFormat: "ID: %d\nName: %s\nGrowth: %d cm.\nWeight: %d\n\n"
-# postgres config
-postgresConnectFormat : "user=%s dbname=%s password=%s sslmode=%s"
-driverName :            postgres
-
+# messages to the player about the results of the character's action
 actionMsg:
   locationFormat: "place: %s , weather: %s , time: %s , obstacle: %s"
   infoCharFormat: "Information about the selected character:\n\nName: %s\nGrowth: %d cm.\nWeight: %d kg."
@@ -64,27 +56,6 @@ actionMsg:
   invalidSum: invalid sum
   noNeedToRecover: you are full
   invalidFood: invalid food
+  invalidWeapon: invalid weapon
+  invalidNumberOfWeapons: "You can't have more than %d weapons."
   lowHP: low health points
-# endpoints
-authEndpoints:
-  auth: '/auth'
-  signIn: '/signIn'
-  signUp: '/signUp'
-  signOut: '/signOut'
-  newPassword: '/newPassword'
-  deleteAccount: '/deleteAccount'
-apiEndpoints:
-  api: '/api'
-  createChar: '/createChar'
-  getAllChar: '/getAllChar'
-  selectChar: '/selectChar'
-  updChar: '/updChar'
-  delChar: '/delChar'
-  delAllChar: '/delAllChar'
-actionEndpoints:
-  action: '/action'
-  infoAboutSelectedChar: '/infoAboutSelectedChar'
-  beginActionScene: '/beginActionScene'
-  actionScene: '/actionScene'
-  beginRepast: '/beginRepast'
-  repast: '/repast'

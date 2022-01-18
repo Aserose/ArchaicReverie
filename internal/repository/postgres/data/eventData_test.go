@@ -26,6 +26,11 @@ func TestPostgresEventData(t *testing.T) {
 				Convey("generateEnemy", func() {
 					So(db.EventData.GenerateEnemy([]model.Enemy{{Class: 1}, {Class: 2}, {Class: 3}}), ShouldNotBeEmpty)
 					logs.Print(db.EventData.GenerateEnemy([]model.Enemy{{Class: 1}, {Class: 2}, {Class: 3}}))
+
+					Convey("getWeapon", func() {
+						So(db.EventData.GetWeapon("knife"), ShouldNotBeEmpty)
+						So(db.EventData.GetWeaponAll(), ShouldNotResemble, []model.Weapon{})
+					})
 				})
 			})
 		})

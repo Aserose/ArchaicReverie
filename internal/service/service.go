@@ -6,6 +6,7 @@ import (
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/Aserose/ArchaicReverie/internal/service/action"
 	"github.com/Aserose/ArchaicReverie/internal/service/authorization"
+	"github.com/Aserose/ArchaicReverie/internal/service/character"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 )
 
@@ -30,8 +31,8 @@ type Character interface {
 type Action interface {
 	GenerateScene() map[string]interface{}
 	Action(character model.Character, action model.Action) (string, model.Character)
-	GetFoodList() []model.Food
-	Eat(character model.Character, order model.Food) (string, model.Character)
+	RecreationalMain(userChar model.Character, items model.Items) (model.Items, model.Character, string)
+	CharMenu(userCharacter model.Character, items model.Items) model.Character
 }
 
 type Service struct {
@@ -41,10 +42,10 @@ type Service struct {
 }
 
 func NewService(db *repository.DB, utilitiesStr config.UtilitiesStr, cfgServices *config.CfgServices,
-	msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig, genConfig config.GenerationConfig) *Service {
+	msgToUser config.MsgToUser, log logger.Logger, logMsg config.LogMsg, charCfg config.CharacterConfig, genCfg config.GenerationConfig) *Service {
 	return &Service{
 		Authorization: authorization.NewServiceAuthorization(db, cfgServices, log, logMsg, msgToUser),
-		Character:     action.NewCharacterService(db, msgToUser, charConfig),
-		Action:        action.NewActionScene(db, genConfig, utilitiesStr, log, msgToUser),
+		Character:     character.NewCharacterService(db, msgToUser, charCfg),
+		Action:        action.NewActionScene(db, charCfg, genCfg, utilitiesStr, log, msgToUser),
 	}
 }

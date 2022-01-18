@@ -38,7 +38,7 @@ func validateActionJumpPosition(jumpPosition ...int) bool {
 	return true
 }
 
-func random() int {
+func randomOutcomeVariable() int {
 	rand.Seed(time.Now().UnixNano())
 	min := -1
 	max := 1

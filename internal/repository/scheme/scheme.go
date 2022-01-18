@@ -22,6 +22,6 @@ func CreateSchemaCharacter(charConfig config.CharacterConfig) string {
 		growth smallint CHECK (growth>%d) CHECK (growth<%d),
 		weight smallint CHECK (weight>%d) CHECK (weight<%d),
 			FOREIGN KEY (ownerId) REFERENCES users (id) ON DELETE CASCADE
-	);`, charConfig.MinCharGrowth, charConfig.MaxCharGrowth,
-		charConfig.MinCharWeight, charConfig.MaxCharWeight)
+	);`, charConfig.Restriction.MinCharGrowth, charConfig.Restriction.MaxCharGrowth,
+		charConfig.Restriction.MinCharWeight, charConfig.Restriction.MaxCharWeight)
 }

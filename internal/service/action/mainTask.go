@@ -12,8 +12,11 @@ import (
 )
 
 type Recreational interface {
-	GetFoodList() []model.Food
-	Eat(character model.Character, order model.Food) (string, model.Character)
+	RecreationalMain(userChar model.Character, items model.Items) (model.Items, model.Character, string)
+}
+
+type CharacterMenu interface {
+	CharMenu(userCharacter model.Character, items model.Items) model.Character
 }
 
 type Location interface {
@@ -24,7 +27,7 @@ type LocationWithEnemy interface {
 	Main(character model.Character, action model.Action) (string, model.Character)
 }
 
-type ActionScene struct {
+type actionScene struct {
 	db           *repository.DB
 	genConfig    config.GenerationConfig
 	utilitiesStr config.UtilitiesStr
@@ -34,14 +37,15 @@ type ActionScene struct {
 	Location
 	LocationWithEnemy
 	Recreational
+	CharacterMenu
 }
 
-func NewActionScene(db *repository.DB, genConfig config.GenerationConfig,
-	utilitiesStr config.UtilitiesStr, log logger.Logger, msgToUser config.MsgToUser) *ActionScene {
+func NewActionScene(db *repository.DB, charCfg config.CharacterConfig, genConfig config.GenerationConfig,
+	utilitiesStr config.UtilitiesStr, log logger.Logger, msgToUser config.MsgToUser) *actionScene {
 
 	cond := tasks.NewCondition()
 
-	return &ActionScene{
+	return &actionScene{
 		db:                db,
 		genConfig:         genConfig,
 		utilitiesStr:      utilitiesStr,
@@ -50,11 +54,12 @@ func NewActionScene(db *repository.DB, genConfig config.GenerationConfig,
 		Conditions:        cond,
 		Location:          tasks.NewLocation(db, log, cond, msgToUser, utilitiesStr),
 		LocationWithEnemy: tasks.NewLocationWithEnemy(db, cond),
-		Recreational:      tasks.NewRecreational(db, log, msgToUser),
+		Recreational:      tasks.NewRecreational(db, charCfg, log, msgToUser),
+		CharacterMenu:     NewCharacterMenu(),
 	}
 }
 
-func (a *ActionScene) GenerateScene() map[string]interface{} {
+func (a *actionScene) GenerateScene() map[string]interface{} {
 	var (
 		chooser *wr.Chooser
 		err     error
@@ -86,7 +91,7 @@ func (a *ActionScene) GenerateScene() map[string]interface{} {
 	return nil
 }
 
-func (a ActionScene) inActive() bool {
+func (a actionScene) inActive() bool {
 	if a.Conditions.GetConditionEnemy() != nil ||
 		a.Conditions.GetConditionLocation() != (model.Location{}) {
 		return true
@@ -95,7 +100,7 @@ func (a ActionScene) inActive() bool {
 	return false
 }
 
-func (a ActionScene) Action(character model.Character, action model.Action) (string, model.Character) {
+func (a actionScene) Action(character model.Character, action model.Action) (string, model.Character) {
 	if a.Conditions.GetConditionEnemy() != nil {
 		return a.LocationWithEnemy.Main(character, action)
 	} else {
@@ -103,7 +108,7 @@ func (a ActionScene) Action(character model.Character, action model.Action) (str
 	}
 }
 
-func (a ActionScene) generateSettingEnemy() []model.Enemy {
+func (a actionScene) generateSettingEnemy() []model.Enemy {
 	enemies := []model.Enemy{}
 
 	for i := 0; i <= RandInt(a.genConfig.GenerationEnemy.MinQuantityOfEnemies, a.genConfig.GenerationEnemy.MaxClassOfEnemy, i); i++ {

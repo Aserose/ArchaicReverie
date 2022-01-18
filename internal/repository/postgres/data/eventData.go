@@ -51,32 +51,12 @@ func (p PostgresEventData) GenerateEventLocation() model.Location {
 	return event
 }
 
-func (p PostgresEventData) GetActionResult(actionResult model.ActionResult) model.ActionResult {
-
-	row := p.db.QueryRowx(`SELECT a.name, d.damage_hp "damage_type.damage_hp", d.damage_mp "damage_type.damage_mp"
-							FROM action_result a
-							JOIN damage_type d ON (a.name = d.name)
-							WHERE a.name = $1`, actionResult.Name)
-
-	if err := row.StructScan(&actionResult); err != nil {
-		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
-	}
-
-	return actionResult
-}
-
-func (p PostgresEventData) GetListFood() []model.Food {
-	var food []model.Food
-
-	if err := p.db.Select(&food, "SELECT * FROM foods"); err != nil {
-		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
-	}
-
-	return food
-}
-
 func (p PostgresEventData) GenerateEnemy(settingEnemy []model.Enemy) []model.Enemy {
 	enemies := []model.Enemy{}
+
+	// class 1 enemy: {probability of weapon class 1, weapon class 2, weapon class 3},
+	// class 2 enemy: {weapon class 1, weapon class 2, weapon class 3},
+	//...
 	classWeapProb := map[int][]int{
 		1: {90, 70, 0},
 		2: {70, 30, 85},
@@ -97,11 +77,56 @@ func (p PostgresEventData) GenerateEnemy(settingEnemy []model.Enemy) []model.Ene
 		if err := row.StructScan(&enemy); err != nil {
 			p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
 		}
+
 		enemy.CoinAmount = generateCoins(enemy.Class)
 		enemies = append(enemies, enemy)
 	}
 
 	return enemies
+}
+
+func (p PostgresEventData) GetActionResult(actionResult model.ActionResult) model.ActionResult {
+
+	row := p.db.QueryRowx(`SELECT a.name, d.damage_hp "damage_type.damage_hp", d.damage_mp "damage_type.damage_mp"
+							FROM action_result a
+							JOIN damage_type d ON (a.name = d.name)
+							WHERE a.name = $1`, actionResult.Name)
+
+	if err := row.StructScan(&actionResult); err != nil {
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return actionResult
+}
+
+func (p PostgresEventData) GetWeaponAll() []model.Weapon {
+	var weapons []model.Weapon
+
+	if err := p.db.Select(&weapons, "SELECT name, price, sharp, weight FROM weapon"); err != nil {
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return weapons
+}
+
+func (p PostgresEventData) GetWeapon(name string) model.Weapon {
+	var weapon model.Weapon
+
+	if err := p.db.Get(&weapon, `SELECT name, price, sharp, weight FROM weapon WHERE name=$1`, name); err != nil {
+		p.log.Panicf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return weapon
+}
+
+func (p PostgresEventData) GetFoodAll() []model.Food {
+	var foods []model.Food
+
+	if err := p.db.Select(&foods, "SELECT * FROM foods"); err != nil {
+		p.log.Errorf(p.logMsg.Format, p.log.CallInfoStr(), err.Error())
+	}
+
+	return foods
 }
 
 func (p PostgresEventData) GetFood(name string) model.Food {

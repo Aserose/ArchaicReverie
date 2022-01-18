@@ -30,17 +30,17 @@ func (p PostgresCharacterData) Create(character model.Character) (int, error) {
 		numOfChar = len(p.ReadAll(character.OwnerId))
 	)
 
-	if numOfChar >= p.charConfig.NumberCharLimit {
+	if numOfChar >= p.charConfig.Restriction.NumberCharLimit {
 		return charId, errors.New(p.logMsg.CharLimitOutErr)
 	}
 
-	if p.charConfig.MinCharGrowth > character.Growth || character.Growth > p.charConfig.MaxCharGrowth {
-		if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
+	if p.charConfig.Restriction.MinCharGrowth > character.Growth || character.Growth > p.charConfig.Restriction.MaxCharGrowth {
+		if p.charConfig.Restriction.MinCharWeight > character.Weight || character.Weight > p.charConfig.Restriction.MaxCharWeight {
 			return charId, errors.New(p.logMsg.CharGrowthAndWeightOutErr)
 		}
 		return charId, errors.New(p.logMsg.CharGrowthOutErr)
 	}
-	if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
+	if p.charConfig.Restriction.MinCharWeight > character.Weight || character.Weight > p.charConfig.Restriction.MaxCharWeight {
 		return charId, errors.New(p.logMsg.CharWeightOutErr)
 	}
 
@@ -73,13 +73,13 @@ func (p PostgresCharacterData) ReadOne(userId, charId int) model.Character {
 }
 
 func (p PostgresCharacterData) Update(character model.Character) error {
-	if p.charConfig.MinCharGrowth > character.Growth || character.Growth > p.charConfig.MaxCharGrowth {
-		if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
+	if p.charConfig.Restriction.MinCharGrowth > character.Growth || character.Growth > p.charConfig.Restriction.MaxCharGrowth {
+		if p.charConfig.Restriction.MinCharWeight > character.Weight || character.Weight > p.charConfig.Restriction.MaxCharWeight {
 			return errors.New(p.logMsg.CharGrowthAndWeightOutErr)
 		}
 		return errors.New(p.logMsg.CharGrowthOutErr)
 	}
-	if p.charConfig.MinCharWeight > character.Weight || character.Weight > p.charConfig.MaxCharWeight {
+	if p.charConfig.Restriction.MinCharWeight > character.Weight || character.Weight > p.charConfig.Restriction.MaxCharWeight {
 		return errors.New(p.logMsg.CharWeightOutErr)
 	}
 

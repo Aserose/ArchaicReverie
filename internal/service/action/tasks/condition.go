@@ -25,7 +25,7 @@ type Reset interface {
 	ResetEnemy()
 }
 
-type Conditions struct {
+type conditions struct {
 	enemy         []model.Enemy
 	locationScene model.Location
 	Set
@@ -33,29 +33,29 @@ type Conditions struct {
 	Reset
 }
 
-func NewCondition() *Conditions {
-	return &Conditions{}
+func NewCondition() *conditions {
+	return &conditions{}
 }
 
-func (c *Conditions) SetConditionLocation(set model.Location) {
+func (c *conditions) SetConditionLocation(set model.Location) {
 	c.locationScene = set
 }
-func (c *Conditions) SetConditionEnemy(set []model.Enemy) {
+func (c *conditions) SetConditionEnemy(set []model.Enemy) {
 	c.enemy = set
 }
 
-func (c Conditions) GetConditionLocation() model.Location {
+func (c conditions) GetConditionLocation() model.Location {
 	return c.locationScene
 }
 
-func (c Conditions) GetConditionEnemy() []model.Enemy {
+func (c conditions) GetConditionEnemy() []model.Enemy {
 	return c.enemy
 }
 
-func (c *Conditions) ResetLocation() {
+func (c *conditions) ResetLocation() {
 	c.locationScene = model.Location{}
 }
 
-func (c *Conditions) ResetEnemy() {
+func (c *conditions) ResetEnemy() {
 	c.enemy = nil
 }

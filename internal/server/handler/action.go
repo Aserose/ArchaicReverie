@@ -8,8 +8,8 @@ import (
 	"net/http"
 )
 
-func (h Handler) infoAboutSelectedChar(c *gin.Context) {
-	_, character, ok := h.getSelectedCharacter(c)
+func (h Handler) characterMenu(c *gin.Context) {
+	userId, character, ok := h.getSelectedCharacter(c)
 	if !ok {
 		c.Writer.WriteHeader(http.StatusUnauthorized)
 		return
@@ -22,7 +22,14 @@ func (h Handler) infoAboutSelectedChar(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, character)
+	items := h.unmarshalItems(h.readRespBody(c.Request.Body), h.log)
+	updChar := h.service.Action.CharMenu(character, items)
+
+	if &updChar != &character{
+		h.updateCookie(c,h.service.UpdateToken(userId, updChar))
+	}
+
+	c.JSON(http.StatusOK, updChar)
 }
 
 func (h Handler) beginActionScene(c *gin.Context) {
@@ -30,27 +37,19 @@ func (h Handler) beginActionScene(c *gin.Context) {
 
 	if locationFeatures != nil {
 		c.JSON(http.StatusOK, locationFeatures)
+		return
 	} else {
 		h.actionScene(c)
 	}
 }
 
-func (h Handler) beginRepast(c *gin.Context) {
-	foods := h.service.Action.GetFoodList()
-
-	if len(foods) != 0 {
-		c.JSON(http.StatusOK, foods)
-	} else {
-		h.repast(c)
-	}
-}
-
-func (h Handler) repast(c *gin.Context) {
+func (h Handler) restock(c *gin.Context) {
 	userId, character, ok := h.getSelectedCharacter(c)
 	if !ok {
 		c.Writer.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+
 	if character.CharId == 0 {
 		if _, err := c.Writer.WriteString(h.msgToUser.CharStatus.CharNotSelect); err != nil {
 			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
@@ -58,31 +57,37 @@ func (h Handler) repast(c *gin.Context) {
 		return
 	}
 
-	var status string
-	order := unmarshalOrder(h.readRespBody(c.Request.Body), h.log)
+	items := h.unmarshalItems(h.readRespBody(c.Request.Body), h.log)
 
-	status, character = h.service.Action.Eat(character, order)
-	h.updateCookie(c, h.service.UpdateToken(userId, character))
+	availableItems, updatedChar, status := h.service.Action.RecreationalMain(character, items)
+
+	if availableItems.Weapons != nil && availableItems.Foods != nil {
+		c.JSON(http.StatusOK, availableItems)
+		return
+	}
 
 	if status != empty {
 		_, err := c.Writer.WriteString(status)
 		if err != nil {
 			h.log.Errorf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
 		}
-	} else {
 		return
 	}
 
+	if &updatedChar != &character {
+		h.updateCookie(c, h.service.UpdateToken(userId, updatedChar))
+		return
+	}
 }
 
-func unmarshalOrder(respBody []byte, log logger.Logger) model.Food {
-	var order model.Food
+func (h Handler) unmarshalItems(respBody []byte, log logger.Logger) model.Items {
+	var items model.Items
 
-	if err := json.Unmarshal(respBody, &order); err != nil {
-		log.Errorf("%s:%s", log.CallInfoStr(), err.Error)
+	if err := json.Unmarshal(respBody, &items); err != nil {
+		h.log.Errorf("%s:%s", log.CallInfoStr(), err.Error)
 	}
 
-	return order
+	return items
 }
 
 func (h Handler) actionScene(c *gin.Context) {
@@ -105,6 +110,7 @@ func (h Handler) actionScene(c *gin.Context) {
 	if action.InAction != empty {
 		actionResult, character = h.service.Action.Action(character, action)
 		h.updateCookie(c, h.service.UpdateToken(userId, character))
+
 		switch actionResult {
 		case h.utilitiesStr.BadRequest:
 			c.Writer.WriteHeader(http.StatusBadRequest)
@@ -115,6 +121,7 @@ func (h Handler) actionScene(c *gin.Context) {
 			}
 			return
 		}
+
 	}
 }
 
@@ -134,7 +141,7 @@ func (h Handler) getSelectedCharacter(c *gin.Context) (int, model.Character, boo
 	userId, ok := c.Get(UserId)
 	if !ok {
 		c.Writer.WriteHeader(http.StatusUnauthorized)
-		return userId.(int), character, false
+		return 0, model.Character{}, false
 	}
 
 	characterMarshal, _ := c.Get(Character)

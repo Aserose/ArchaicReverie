@@ -25,10 +25,12 @@ type CharacterData interface {
 
 type EventData interface {
 	GenerateEventLocation() model.Location
-	GetListFood() []model.Food
-	GetFood(name string) model.Food
-	GetActionResult(actionResult model.ActionResult) model.ActionResult
 	GenerateEnemy(settingEnemy []model.Enemy) []model.Enemy
+	GetFoodAll() []model.Food
+	GetFood(name string) model.Food
+	GetWeaponAll() []model.Weapon
+	GetWeapon(name string) model.Weapon
+	GetActionResult(actionResult model.ActionResult) model.ActionResult
 }
 
 type PostgresData struct {

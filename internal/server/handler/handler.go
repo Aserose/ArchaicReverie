@@ -49,11 +49,9 @@ func (h *Handler) Routes(endpoints config.Endpoints) *gin.Engine {
 
 		action := api.Group(endpoints.ActionEndpoints.Action)
 		{
-			action.GET(endpoints.ActionEndpoints.InfoAboutSelectedChar, h.infoAboutSelectedChar)
-			action.POST(endpoints.ActionEndpoints.BeginActionScene, h.beginActionScene)
-			action.POST(endpoints.ActionEndpoints.ActionScene, h.actionScene)
-			action.POST(endpoints.ActionEndpoints.BeginRepast, h.beginRepast)
-			action.POST(endpoints.ActionEndpoints.Repast, h.repast)
+			action.GET(endpoints.ActionEndpoints.CharacterMenu, h.characterMenu)
+			action.POST(endpoints.ActionEndpoints.ActionScene, h.beginActionScene)
+			action.POST(endpoints.ActionEndpoints.Restock, h.restock)
 		}
 	}
 

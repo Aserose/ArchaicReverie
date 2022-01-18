@@ -57,8 +57,13 @@ func loadEnv(logs logger.Logger) (config.LogMsg, config.MsgToUser, *config.CfgPo
 	cwd, _ := os.Getwd()
 	rootPath := re.Find([]byte(cwd))
 	godotenv.Load(string(rootPath) + `/.env`)
-	logMsg, msgToUser, _, _, charConfig := config.InitStrSet(os.Getenv(`CONFIG_FILE`), logs)
-	_, _, cfgPostgres, err := config.Init(os.Getenv("CONFIG_FILE"), logs, logMsg)
+
+	configs := config.NewConfig(os.Getenv("CONFIG_GAME"),
+		os.Getenv("CONFIG_INFRASTRUCTURE"), os.Getenv("CONFIG_MSG"), logs)
+
+	charConfig := configs.GameConfigs.InitCharConfig()
+	logMsg, msgToUser, _ := configs.MsgConfigs.InitMsg()
+	_, _, cfgPostgres, _, err := configs.InfrastructureConfigs.InitInfrastructureConfigs(logMsg)
 	if err != nil {
 		logs.Errorf(logMsg.Format, logs.CallInfoStr(), err.Error())
 	}

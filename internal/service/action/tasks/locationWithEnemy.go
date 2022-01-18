@@ -5,19 +5,19 @@ import (
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 )
 
-type LocationWithEnemy struct {
+type locationWithEnemy struct {
 	db         *repository.DB
 	Conditions Condition
 }
 
-func NewLocationWithEnemy(db *repository.DB, conditions Condition) *LocationWithEnemy {
-	return &LocationWithEnemy{
+func NewLocationWithEnemy(db *repository.DB, conditions Condition) *locationWithEnemy {
+	return &locationWithEnemy{
 		db:         db,
 		Conditions: conditions,
 	}
 }
 
-func (l LocationWithEnemy) Main(character model.Character, action model.Action) (string, model.Character) {
+func (l locationWithEnemy) Main(character model.Character, action model.Action) (string, model.Character) {
 	switch action.InAction {
 	case "hit":
 		return l.hit(character, action.Hit)
@@ -27,12 +27,12 @@ func (l LocationWithEnemy) Main(character model.Character, action model.Action) 
 	return "invalid command", character
 }
 
-func (l LocationWithEnemy) hit(character model.Character, action model.Hit) (string, model.Character) {
+func (l locationWithEnemy) hit(character model.Character, action model.Hit) (string, model.Character) {
 
 	return "", character
 }
 
-func (l LocationWithEnemy) run(character model.Character, action model.Run) (string, model.Character) {
+func (l locationWithEnemy) run(character model.Character, action model.Run) (string, model.Character) {
 
 	return "", character
 }

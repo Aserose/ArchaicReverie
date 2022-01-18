@@ -1,0 +1,26 @@
+# postgres config
+postgresConnectFormat : "user=%s dbname=%s password=%s sslmode=%s"
+driverName :            postgres
+# endpoints
+authEndpoints:
+  auth: '/auth'
+  signIn: '/signIn'
+  signUp: '/signUp'
+  signOut: '/signOut'
+  newPassword: '/newPassword'
+  deleteAccount: '/deleteAccount'
+apiEndpoints:
+  api: '/api'
+  createChar: '/createChar'
+  getAllChar: '/getAllChar'
+  selectChar: '/selectChar'
+  updChar: '/updChar'
+  delChar: '/delChar'
+  delAllChar: '/delAllChar'
+actionEndpoints:
+  action: '/action'
+  characterMenu: '/characterMenu'
+  beginActionScene: '/beginActionScene'
+  actionScene: '/actionScene'
+  beginRepast: '/beginRepast'
+  restock: '/restock'

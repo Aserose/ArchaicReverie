@@ -8,7 +8,7 @@ import (
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 )
 
-type Location struct {
+type location struct {
 	db           *repository.DB
 	Conditions   Condition
 	log          logger.Logger
@@ -16,8 +16,8 @@ type Location struct {
 	utilitiesStr config.UtilitiesStr
 }
 
-func NewLocation(db *repository.DB, log logger.Logger, condition Condition, msgToUser config.MsgToUser, utilitiesStr config.UtilitiesStr) *Location {
-	return &Location{
+func NewLocation(db *repository.DB, log logger.Logger, condition Condition, msgToUser config.MsgToUser, utilitiesStr config.UtilitiesStr) *location {
+	return &location{
 		db:           db,
 		Conditions:   condition,
 		log:          log,
@@ -26,12 +26,11 @@ func NewLocation(db *repository.DB, log logger.Logger, condition Condition, msgT
 	}
 }
 
-func (a Location) Main(character model.Character, action model.Action) (string, model.Character) {
+func (a location) Main(character model.Character, action model.Action) (string, model.Character) {
 	return a.jump(character, action.Jump)
 }
 
-func (a Location) jump(character model.Character, jumpPosition model.Jump) (string, model.Character) {
-
+func (a location) jump(character model.Character, jumpPosition model.Jump) (string, model.Character) {
 	actionResult := a.db.Postgres.EventData.GetActionResult(model.ActionResult{Name: "fall"})
 
 	if character.RemainHealth < 9 {
@@ -58,7 +57,7 @@ func (a Location) jump(character model.Character, jumpPosition model.Jump) (stri
 			jumpPosition.SquatDepth +
 			calcGrowth +
 			calcWeight +
-			random()
+			randomOutcomeVariable()
 
 	result := a.Conditions.GetConditionLocation().TotalSumValues + sumJumpPosition
 

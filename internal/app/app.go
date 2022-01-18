@@ -17,22 +17,27 @@ import (
 )
 
 var (
-	YmlFilename           = "configs/config.yml"
-	YmlGenerationFilename = "configs/generationConfig.yml"
-	Ch                    = make(chan []byte)
+	YmlMsgFilename            = "configs/msgConfig.yml"
+	YmlGameConfig             = "configs/gameConfig.yml"
+	YmlInfrastructureFilename = "configs/infrastructureConfig.yml"
+	Ch                        = make(chan []byte)
 )
 
 func Start(mode int) {
 	log := logger.NewLogger()
 
-	logMsg, msgToUser, utilitiesStr, endpoints, charConfig := config.InitStrSet(YmlFilename, log)
+	configs := config.NewConfig(YmlGameConfig, YmlInfrastructureFilename, YmlMsgFilename, log)
 
-	cfgServer, cfgServices, cfgPostgres, err := config.Init(YmlFilename, log, logMsg)
+	logMsg, msgToUser, utilitiesStr := configs.MsgConfigs.InitMsg()
+
+	charConfig := configs.GameConfigs.InitCharConfig()
+
+	cfgGeneration := configs.GameConfigs.InitGenerationConfig()
+
+	cfgServer, cfgServices, cfgPostgres, endpoints, err := configs.InfrastructureConfigs.InitInfrastructureConfigs(logMsg)
 	if err != nil {
 		log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
-
-	cfgGeneration := config.InitGenerationConfig(YmlGenerationFilename, log)
 
 	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg, charConfig), msgToUser, log, logMsg, charConfig)
 
@@ -60,6 +65,7 @@ func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo, log logger.Lo
 	if err != nil {
 		log.Errorf("%s %s", log.CallInfoStr(), err.Error())
 	}
+
 	if err := json.Unmarshal(inrec, &toTest); err != nil {
 		log.Errorf("%s %s", log.CallInfoStr(), err.Error())
 	}
@@ -70,21 +76,31 @@ func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo, log logger.Lo
 				switch len(strings.Split(info[i].Path, "/")) {
 				case 3:
 					if strings.Contains(val2, strings.Split(info[i].Path, "/")[2]) {
-						toTest[field][field2] = fmt.Sprintf(`%s %s/%s%s`, info[i].Method, os.Getenv("APP_URL"),
-							strings.Split(info[i].Path, "/")[1], val2)
+						toTest[field][field2] = fmt.Sprintf(`%s %s/%s%s`,
+							info[i].Method,
+							os.Getenv("APP_URL"),
+							strings.Split(info[i].Path, "/")[1],
+							val2)
 					}
 				case 4:
 					if strings.Contains(val2, strings.Split(info[i].Path, "/")[3]) {
-						toTest[field][field2] = fmt.Sprintf(`%s %s/%s/%s%s`, info[i].Method, os.Getenv("APP_URL"),
+						toTest[field][field2] = fmt.Sprintf(`%s %s/%s/%s%s`,
+							info[i].Method,
+							os.Getenv("APP_URL"),
 							strings.Split(info[i].Path, "/")[1],
-							strings.Split(info[i].Path, "/")[2], val2)
+							strings.Split(info[i].Path, "/")[2],
+							val2)
 					}
 				}
 			}
 		}
 	}
-	resultJson, _ := json.Marshal(toTest)
 
-	Ch <- resultJson
+	apiSchemeJson, err := json.Marshal(toTest)
+	if err != nil {
+		log.Panicf("%s %s", log.CallInfoStr(), err.Error())
+	}
+
+	Ch <- apiSchemeJson
 	close(Ch)
 }

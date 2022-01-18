@@ -10,7 +10,7 @@ import (
 
 const empty = ""
 
-type TokenClaims struct {
+type tokenClaims struct {
 	jwt.StandardClaims
 	UserId    int             `json:"id"`
 	Character model.Character `json:"character"`
@@ -63,7 +63,7 @@ func (s serviceAuthorization) DeleteAccount(username, password string) string {
 }
 
 func (s serviceAuthorization) createToken(userId int, character model.Character) string {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims{
 		jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().AddDate(0, 0, 1).Unix()},
@@ -81,7 +81,7 @@ func (s serviceAuthorization) createToken(userId int, character model.Character)
 }
 
 func (s serviceAuthorization) Verification(tokenString string) (int, model.Character, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
@@ -92,7 +92,7 @@ func (s serviceAuthorization) Verification(tokenString string) (int, model.Chara
 		return 0, model.Character{}, err
 	}
 
-	if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
+	if claims, ok := token.Claims.(*tokenClaims); ok && token.Valid {
 		return claims.UserId, claims.Character, nil
 	} else {
 		s.log.Errorf(s.logMsg.Format, s.log.CallInfoStr(), err.Error())

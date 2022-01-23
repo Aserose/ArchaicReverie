@@ -33,6 +33,15 @@ func (l locationWithEnemy) Main(character model.Character, action model.Action) 
 }
 
 func (l locationWithEnemy) hit(character model.Character, action model.Hit) (string, model.Character) {
+
+	// challenge variables:
+	//		weapon of the strongest enemy (comparison of sharpness and weight & converted sharpness) +
+	//		parameter comparison with the strongest enemy (weight, growth) -- 3 variables total
+	// character variables:
+	//		action parameters (target) +
+	//		character's weapon (converted parameters in one ) +
+	//		character parameter (converted weight and height in one) -- 3 variables total
+
 	result := l.calculateCharSumHit(character, action) + l.calculateChallengeHitTotalSum(character)
 	strongestEnemy := l.getStrongestEnemies()
 
@@ -49,6 +58,14 @@ func (l locationWithEnemy) hit(character model.Character, action model.Hit) (str
 }
 
 func (l locationWithEnemy) run(character model.Character, action model.Run) (string, model.Character) {
+
+	// challenge variables:
+	//		number of enemies +
+	//		parameter comparison with the fastest enemy (weight, growth) -- 3 variables total
+	// character variables:
+	//		converted character parameters (weight, growth) +
+	//		action parameters (body tilt) -- 3 variables total
+
 	result := l.calculateChallengeRunTotalSum(character) + l.calculateCharSumRun(character, action)
 	strongestEnemy := l.getStrongestEnemies()
 
@@ -214,14 +231,14 @@ func (l locationWithEnemy) calculateCharWeaponVariable(character model.Character
 
 	if character.Inventory.Weapons != nil {
 		if character.Inventory.Weapons[0].Sharp > character.Inventory.Weapons[0].Weight {
-			weaponParams = append(weaponParams, -1)
-		} else {
 			weaponParams = append(weaponParams, 1)
+		} else {
+			weaponParams = append(weaponParams, -1)
 		}
 		if character.Inventory.Weapons[0].Sharp > 2 {
-			weaponParams = append(weaponParams, -1)
-		} else {
 			weaponParams = append(weaponParams, 1)
+		} else {
+			weaponParams = append(weaponParams, -1)
 		}
 	}
 

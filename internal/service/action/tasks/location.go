@@ -35,6 +35,13 @@ func (a location) Main(character model.Character, action model.Action) (string, 
 }
 
 func (a location) jump(character model.Character, jumpPosition model.Jump) (string, model.Character) {
+
+	// challenge variables:
+	// 		location parameters -- 4 variables total
+	// character variables:
+	//		action parameters -- 4 variables total
+	// + random variables
+
 	actionResult := a.db.Postgres.EventData.GetActionResult(model.ActionResult{Name: "fall"})
 
 	if validateActionJumpPosition(

@@ -27,18 +27,15 @@ func NewLocation(db *repository.DB, log logger.Logger, condition Condition, msgT
 }
 
 func (a location) Main(character model.Character, action model.Action) (string, model.Character) {
-	return a.jump(character, action.Jump)
+	switch action.InAction {
+	case "jump":
+		return a.jump(character, action.Jump)
+	}
+	return a.msgToUser.ActionMsg.InvalidCommand, character
 }
 
 func (a location) jump(character model.Character, jumpPosition model.Jump) (string, model.Character) {
 	actionResult := a.db.Postgres.EventData.GetActionResult(model.ActionResult{Name: "fall"})
-
-	if character.RemainHealth < 9 {
-		if character.RemainHealth < 0 {
-			character.RemainHealth = 0
-		}
-		return a.msgToUser.ActionMsg.LowHP, character
-	}
 
 	if validateActionJumpPosition(
 		jumpPosition.RunUp,
@@ -67,6 +64,6 @@ func (a location) jump(character model.Character, jumpPosition model.Jump) (stri
 		return a.msgToUser.ActionMsg.JumpOver, character
 	} else {
 		return fmt.Sprintf("%s %s", a.msgToUser.ActionMsg.JumpFell, fmt.Sprintf(a.msgToUser.ActionMsg.RemainHealth, character.RemainHealth)),
-			damage(character, actionResult.DamageHP)
+			damage(character, actionResult)
 	}
 }

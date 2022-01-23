@@ -8,6 +8,7 @@ type Items struct {
 type Weapon struct {
 	Name   string `json:"name" db:"name"`
 	Price  int    `json:"price" db:"price"`
+	Class  int    `json:"-" db:"weapon_class"`
 	Sharp  int    `json:"sharp" db:"sharp"`
 	Weight int    `json:"weight" db:"weight"`
 }

@@ -33,6 +33,9 @@ func (c characterService) calculateThresholdMP(weight int) int {
 	mp := c.charConfig.Conversion.BaseMP
 	for i := c.charConfig.Restriction.MinCharWeight; i <= weight; i += c.charConfig.Conversion.AddMP {
 		mp -= c.charConfig.Conversion.AddMP
+		if mp == c.charConfig.Conversion.MinThresholdMP {
+			break
+		}
 	}
 	return mp
 }

@@ -50,12 +50,17 @@ charStatus :
 actionMsg:
   locationFormat: "place: %s , weather: %s , time: %s , obstacle: %s"
   infoCharFormat: "Information about the selected character:\n\nName: %s\nGrowth: %d cm.\nWeight: %d kg."
+  remainHealth: "You have %d health points left"
   jumpOver: you jumped over!
   jumpFell: you fell!
-  remainHealth: "You have %d health points left"
   invalidSum: invalid sum
   noNeedToRecover: you are full
   invalidFood: invalid food
   invalidWeapon: invalid weapon
   invalidNumberOfWeapons: "You can't have more than %d weapons."
+  invalidCommand: invalid command
   lowHP: low health points
+  successfulEscape: you escaped!
+  failedEscape: you are caught!
+  successfulHit: win!
+  failedHit: lost!

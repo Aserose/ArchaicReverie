@@ -25,21 +25,42 @@ func (h Handler) characterMenu(c *gin.Context) {
 	items := h.unmarshalItems(h.readRespBody(c.Request.Body), h.log)
 	updChar := h.service.Action.CharMenu(character, items)
 
-	if &updChar != &character{
-		h.updateCookie(c,h.service.UpdateToken(userId, updChar))
+	if &updChar != &character {
+		h.updateCookie(c, h.service.UpdateToken(userId, updChar))
 	}
 
 	c.JSON(http.StatusOK, updChar)
 }
 
 func (h Handler) beginActionScene(c *gin.Context) {
+	userId, character, ok := h.getSelectedCharacter(c)
+	if !ok {
+		c.Writer.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if character.CharId == 0 {
+		if _, err := c.Writer.WriteString(h.msgToUser.CharStatus.CharNotSelect); err != nil {
+			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
+		}
+		return
+	}
+
+	if !h.service.Action.HealthCheck(character) {
+		_, err := c.Writer.WriteString(h.msgToUser.ActionMsg.LowHP)
+		if err != nil {
+			h.log.Errorf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
+		}
+		return
+	}
+
 	locationFeatures := h.service.Action.GenerateScene()
 
 	if locationFeatures != nil {
 		c.JSON(http.StatusOK, locationFeatures)
 		return
 	} else {
-		h.actionScene(c)
+		h.actionScene(c, character, userId)
 	}
 }
 
@@ -90,20 +111,8 @@ func (h Handler) unmarshalItems(respBody []byte, log logger.Logger) model.Items 
 	return items
 }
 
-func (h Handler) actionScene(c *gin.Context) {
+func (h Handler) actionScene(c *gin.Context, character model.Character, userId int) {
 	var actionResult string
-	userId, character, ok := h.getSelectedCharacter(c)
-	if !ok {
-		c.Writer.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	if character.CharId == 0 {
-		if _, err := c.Writer.WriteString(h.msgToUser.CharStatus.CharNotSelect); err != nil {
-			h.log.Panicf(h.logMsg.Format, h.log.CallInfoStr(), err.Error())
-		}
-		return
-	}
 
 	action := h.unmarshalAction(h.readRespBody(c.Request.Body), h.log)
 

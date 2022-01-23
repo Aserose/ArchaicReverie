@@ -68,7 +68,12 @@ type (
 			InvalidFood            string `yaml:"invalidFood"`
 			InvalidWeapon          string `yaml:"invalidWeapon"`
 			InvalidNumberOfWeapons string `yaml:"invalidNumberOfWeapons"`
+			InvalidCommand         string `yaml:"invalidCommand"`
 			LowHP                  string `yaml:"lowHP"`
+			SuccessfulEscape       string `yaml:"successfulEscape"`
+			FailedEscape           string `yaml:"failedEscape"`
+			SuccessfulHit          string `yaml:"successfulHit"`
+			FailedHit              string `yaml:"failedHit"`
 		} `yaml:"actionMsg"`
 	}
 	UtilitiesStr struct {

@@ -29,6 +29,7 @@ type Character interface {
 }
 
 type Action interface {
+	HealthCheck(char model.Character) bool
 	GenerateScene() map[string]interface{}
 	Action(character model.Character, action model.Action) (string, model.Character)
 	RecreationalMain(userChar model.Character, items model.Items) (model.Items, model.Character, string)

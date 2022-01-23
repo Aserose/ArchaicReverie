@@ -45,6 +45,6 @@ func NewPostgresData(db *sqlx.DB, msgToUser config.MsgToUser, log logger.Logger,
 		db:            db,
 		UserData:      NewUserData(db, msgToUser, log, logMsg),
 		CharacterData: NewCharacterData(db, log, logMsg, charConfig),
-		EventData:     NewEventData(db, log, logMsg),
+		EventData:     NewEventData(db, log, logMsg, charConfig),
 	}
 }

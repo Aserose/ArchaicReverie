@@ -2,9 +2,12 @@ package tests
 
 import (
 	"github.com/Aserose/ArchaicReverie/internal/app"
+	"github.com/Aserose/ArchaicReverie/internal/config"
 	"github.com/Aserose/ArchaicReverie/internal/repository/model"
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
+	wr "github.com/mroth/weightedrand"
 	cv "github.com/smartystreets/goconvey/convey"
+	"log"
 	"net/http"
 	"strings"
 	"testing"
@@ -13,7 +16,9 @@ import (
 func TestAction(t *testing.T) {
 	logs := logger.NewLogger()
 	_, msgToUser, charConfig := loadEnv(logs)
+
 	go app.Start(1)
+
 	apiScheme := loadApiScheme(logs)
 
 	cv.Convey("setup", t, func() {
@@ -26,46 +31,36 @@ func TestAction(t *testing.T) {
 			testUser        = generateTestUser()
 		)
 
-		cv.Convey("beginActionScene", func() {
+		cv.Convey("character menu", func() {
 			resp, _ = temp.doRequest(
 				client,
-				strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[0],
-				strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[1],
+				strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[0],
+				strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[1],
 				reqBody(logs, testUser),
 				cookie)
 
-			cv.So(string(temp.readRespBody(resp)), cv.ShouldNotBeEmpty)
+			selectedChar := temp.unmarshalChar(temp.readRespBody(resp))
+			logs.Printf("%d health points left out of %d ; the amount of coins: %d", selectedChar.RemainHealth,
+				selectedChar.ThresholdHealth, selectedChar.Inventory.CoinAmount)
 
-			var result string
-			for {
-				resp, updCookie := temp.doRequest(
+			resp, _ = temp.doRequest(
+				client,
+				strings.Split(apiScheme.ActionEndpoints.Restock, " ")[0],
+				strings.Split(apiScheme.ActionEndpoints.Restock, " ")[1],
+				reqBody(logs, testUser),
+				cookie)
+
+			cheapestOrder := temp.cheapestOrder(temp.unmarshalAvailableItems(temp.readRespBody(resp)))
+
+			cv.Convey("purchase weapon", func() {
+
+				resp, cookie = temp.doRequest(
 					client,
-					strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[0],
-					strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[1],
-					reqBody(logs, generateAction()),
+					strings.Split(apiScheme.ActionEndpoints.Restock, " ")[0],
+					strings.Split(apiScheme.ActionEndpoints.Restock, " ")[1],
+					reqBody(logs, model.Items{Weapons: cheapestOrder.Weapons}),
 					cookie)
 
-				if len(updCookie) > 0 {
-					if updCookie[0].Value != "" {
-						cookie = updCookie
-					}
-				}
-
-				result = string(temp.readRespBody(resp))
-				logs.Print(result)
-
-				if result == msgToUser.ActionMsg.JumpOver {
-					cv.So(result, cv.ShouldEqual, msgToUser.ActionMsg.JumpOver)
-					break
-				}
-				if result == msgToUser.ActionMsg.LowHP {
-					cv.So(result, cv.ShouldEqual, "low health points")
-					break
-				}
-				cv.So(result, cv.ShouldNotBeEmpty)
-			}
-
-			cv.Convey("getInfoAboutChar", func() {
 				resp, _ = temp.doRequest(
 					client,
 					strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[0],
@@ -74,56 +69,69 @@ func TestAction(t *testing.T) {
 					cookie)
 
 				selectedChar := temp.unmarshalChar(temp.readRespBody(resp))
-				logs.Printf("%d health points left out of %d", selectedChar.RemainHealth, selectedChar.ThresholdHealth)
-				resp, _ = temp.doRequest(
-					client,
-					strings.Split(apiScheme.ActionEndpoints.Restock, " ")[0],
-					strings.Split(apiScheme.ActionEndpoints.Restock, " ")[1],
-					reqBody(logs, testUser),
-					cookie)
 
-				cheapestOrder := temp.cheapestOrder(temp.unmarshalAvailableItems(temp.readRespBody(resp)))
+				logs.Print("character inventory ", selectedChar.Inventory.Weapons, " the amount of coins: ", selectedChar.Inventory.CoinAmount)
 
-				if selectedChar.RemainHealth < selectedChar.ThresholdHealth {
-					logs.Printf("restore health by %d points with %s", cheapestOrder.Foods[0].RestoreHp, cheapestOrder.Foods[0].Name)
-
-					resp, cookie = temp.doRequest(
-						client,
-						strings.Split(apiScheme.ActionEndpoints.Restock, " ")[0],
-						strings.Split(apiScheme.ActionEndpoints.Restock, " ")[1],
-						reqBody(logs, model.Items{Foods: cheapestOrder.Foods}),
-						cookie)
-
+				cv.Convey("beginActionScene", func() {
 					resp, _ = temp.doRequest(
 						client,
-						strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[0],
-						strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[1],
+						strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[0],
+						strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[1],
 						reqBody(logs, testUser),
 						cookie)
 
-					selectedChar := temp.unmarshalChar(temp.readRespBody(resp))
-					logs.Printf("%d health points left out of %d", selectedChar.RemainHealth, selectedChar.ThresholdHealth)
-				}
+					result := string(temp.readRespBody(resp))
+					log.Print("the challenge: ", result)
 
-				cv.Convey("purchase weapon", func() {
+					cv.So(result, cv.ShouldNotBeEmpty)
 
-					resp, cookie = temp.doRequest(
-						client,
-						strings.Split(apiScheme.ActionEndpoints.Restock, " ")[0],
-						strings.Split(apiScheme.ActionEndpoints.Restock, " ")[1],
-						reqBody(logs, model.Items{Weapons: cheapestOrder.Weapons}),
-						cookie)
+					for {
 
-					resp, _ = temp.doRequest(
-						client,
-						strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[0],
-						strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[1],
-						reqBody(logs, testUser),
-						cookie)
+						resp, updCookie := temp.doRequest(
+							client,
+							strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[0],
+							strings.Split(apiScheme.ActionEndpoints.ActionScene, " ")[1],
+							reqBody(logs, generateAction(selectAction(result))),
+							cookie)
 
-					selectedChar := temp.unmarshalChar(temp.readRespBody(resp))
+						if len(updCookie) > 0 {
+							if updCookie[0].Value != "" {
+								cookie = updCookie
+							}
+						}
 
-					logs.Print("character inventory ", selectedChar.Inventory.Weapons," the amount of coins: ", selectedChar.Inventory.CoinAmount)
+						result = string(temp.readRespBody(resp))
+						logs.Print(result)
+
+						if checkActionResult(result, msgToUser) == true {
+							break
+						}
+
+						cv.So(result, cv.ShouldNotBeEmpty)
+
+					}
+
+					if selectedChar.RemainHealth < selectedChar.ThresholdHealth {
+						logs.Printf("restore health by %d points with %s", cheapestOrder.Foods[0].RestoreHp, cheapestOrder.Foods[0].Name)
+
+						resp, cookie = temp.doRequest(
+							client,
+							strings.Split(apiScheme.ActionEndpoints.Restock, " ")[0],
+							strings.Split(apiScheme.ActionEndpoints.Restock, " ")[1],
+							reqBody(logs, model.Items{Foods: cheapestOrder.Foods}),
+							cookie)
+
+						resp, _ = temp.doRequest(
+							client,
+							strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[0],
+							strings.Split(apiScheme.ActionEndpoints.CharacterMenu, " ")[1],
+							reqBody(logs, testUser),
+							cookie)
+
+						selectedChar := temp.unmarshalChar(temp.readRespBody(resp))
+						logs.Printf("%d health points left out of %d ; the amount of coins: %d", selectedChar.RemainHealth,
+							selectedChar.ThresholdHealth, selectedChar.Inventory.CoinAmount)
+					}
 
 					cv.Convey("discard weapon", func() {
 
@@ -135,29 +143,52 @@ func TestAction(t *testing.T) {
 							cookie)
 
 						selectedChar := temp.unmarshalChar(temp.readRespBody(resp))
-						logs.Print("character inventory ", selectedChar.Inventory.Weapons," the amount of coins: ", selectedChar.Inventory.CoinAmount)
+						logs.Print("character inventory ", selectedChar.Inventory.Weapons, " the amount of coins: ", selectedChar.Inventory.CoinAmount)
 
+						cv.Convey("delete", func() {
+							resp, cookie = temp.doRequest(
+								client,
+								strings.Split(apiScheme.AuthEndpoints.DeleteAccount, " ")[0],
+								strings.Split(apiScheme.AuthEndpoints.DeleteAccount, " ")[1],
+								reqBody(logs, testUser),
+								cookie)
 
-					cv.Convey("delete", func() {
-						resp, cookie = temp.doRequest(
-							client,
-							strings.Split(apiScheme.AuthEndpoints.DeleteAccount, " ")[0],
-							strings.Split(apiScheme.AuthEndpoints.DeleteAccount, " ")[1],
-							reqBody(logs, testUser),
-							cookie)
+							resp, cookie = temp.doRequest(
+								client,
+								strings.Split(apiScheme.AuthEndpoints.SignIn, " ")[0],
+								strings.Split(apiScheme.AuthEndpoints.SignIn, " ")[1],
+								reqBody(logs, testUser),
+								cookie)
 
-						resp, cookie = temp.doRequest(
-							client,
-							strings.Split(apiScheme.AuthEndpoints.SignIn, " ")[0],
-							strings.Split(apiScheme.AuthEndpoints.SignIn, " ")[1],
-							reqBody(logs, testUser),
-							cookie)
-
-						cv.So(string(temp.readRespBody(resp)), cv.ShouldEqual, msgToUser.AuthStatus.InvalidUsername)
+							cv.So(string(temp.readRespBody(resp)), cv.ShouldEqual, msgToUser.AuthStatus.InvalidUsername)
+						})
 					})
 				})
 			})
 		})
 	})
-	})
+}
+
+func selectAction(conditions string) string {
+	chooseAction, _ := wr.NewChooser(
+		wr.Choice{Item: "hit", Weight: 5},
+		wr.Choice{Item: "run", Weight: 5})
+
+	if strings.Contains(conditions, "enemy") {
+		return chooseAction.Pick().(string)
+	} else {
+		return "jump"
+	}
+}
+
+func checkActionResult(result string, msgToUser config.MsgToUser) bool {
+
+	if result == msgToUser.ActionMsg.JumpOver ||
+		result == msgToUser.ActionMsg.LowHP ||
+		result == msgToUser.ActionMsg.SuccessfulHit ||
+		result == msgToUser.ActionMsg.SuccessfulEscape {
+		return true
+	}
+
+	return false
 }

@@ -108,16 +108,41 @@ func generateChar(ownedId int) model.Character {
 	}
 }
 
-func generateAction() model.Action {
-	return model.Action{
-		InAction: "jump",
-		Jump: model.Jump{
-			SquatDepth:   randIntWithExceptions(-1, 2, 0),
-			ArmAmplitude: randIntWithExceptions(-1, 2, 0),
-			BodyTilt:     randIntWithExceptions(-1, 2, 0),
-			RunUp:        randIntWithExceptions(-1, 2, 0),
-		},
+func generateAction(actionName string) model.Action {
+
+	if actionName == "jump" {
+		return model.Action{
+			InAction: actionName,
+			Jump: model.Jump{
+				SquatDepth:   randIntWithExceptions(-1, 2, 0),
+				ArmAmplitude: randIntWithExceptions(-1, 2, 0),
+				BodyTilt:     randIntWithExceptions(-1, 2, 0),
+				RunUp:        randIntWithExceptions(-1, 2, 0),
+			},
+		}
 	}
+
+	if actionName == "hit" {
+		return model.Action{
+			InAction: actionName,
+			Hit: model.Hit{
+				Backswing: randIntWithExceptions(-1, 2, 0),
+				Straight:  randIntWithExceptions(-1, 2, 0),
+				Target:    randInt(1, 2),
+			},
+		}
+	}
+
+	if actionName == "run" {
+		return model.Action{
+			InAction: actionName,
+			Run: model.Run{
+				BodyTilt: randIntWithExceptions(-1, 2, 0),
+			},
+		}
+	}
+
+	return model.Action{}
 }
 
 func randIntWithExceptions(min, max int, exc ...int) int {

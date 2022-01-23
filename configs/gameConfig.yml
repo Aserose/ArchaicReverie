@@ -4,6 +4,7 @@ conversion:
   addHP: 10
   baseMP: 50
   addMP: 10
+  minThresholdMP: 10
   baseAmountCoin: 100
 # character creation restrictions (weight in kg, height in cm)
 restriction:
@@ -22,4 +23,4 @@ generationEnemy:
 #type of task
 typeOfTask:
   location: 5
-  locationWithEnemy: 0
+  locationWithEnemy: 5

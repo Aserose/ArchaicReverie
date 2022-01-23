@@ -49,7 +49,7 @@ var SchemaDamageAndResult = `CREATE TABLE IF NOT EXISTS action_result (
 			FOREIGN KEY (name) REFERENCES action_result (name) ON DELETE CASCADE
 	);
 	WITH actionInfo(name, damage_hp, damage_mp) AS (
-		VALUES ('fall', 10, 0)),
+		VALUES ('fall', 10, 0), ('hit', 5, 0)),
 		ins1 AS (
 		INSERT INTO action_result (name)
 		SELECT name FROM actionInfo

@@ -21,6 +21,7 @@ type Run struct {
 type Hit struct {
 	Backswing int `json:"backswing"`
 	Straight  int `json:"straight"`
+	Target    int `json:"target"`
 }
 
 type ActionResult struct {

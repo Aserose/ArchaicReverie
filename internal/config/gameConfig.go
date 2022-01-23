@@ -13,6 +13,7 @@ type CharacterConfig struct {
 		AddHP          int `yaml:"addHP"`
 		BaseMP         int `yaml:"baseMP"`
 		AddMP          int `yaml:"addMP"`
+		MinThresholdMP int `yaml:"minThresholdMP"`
 		BaseAmountCoin int `yaml:"baseAmountCoin"`
 	} `yaml:"conversion"`
 

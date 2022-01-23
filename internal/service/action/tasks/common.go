@@ -6,27 +6,77 @@ import (
 	"time"
 )
 
-func damage(char model.Character, damage int) model.Character {
-	char.RemainHealth -= damage
+func convertWeaponParams(weapon model.Weapon) int {
+	var convertDamage int
+
+	if weapon.Sharp > weapon.Weight {
+		convertDamage = 1
+	} else {
+		convertDamage = -1
+	}
+
+	if weapon.Sharp > 2 {
+		convertDamage += 1
+	} else {
+		convertDamage -= 1
+	}
+
+	if weapon.Weight > 2 {
+		convertDamage -= 1
+	} else {
+		convertDamage += 1
+	}
+
+	return convertDamage
+
+}
+
+func enemyDamage(char model.Character, result model.ActionResult, enemy model.Enemy) model.Character {
+	weaponVar, addWeaponDamageHP := convertWeaponParams(enemy.Weapons), 0
+
+	switch weaponVar < 0 {
+	case true:
+		for i, j := weaponVar, 0; i <= 0; i, j = i+1, j+3 {
+			addWeaponDamageHP += j
+		}
+	case false:
+		for i, j := weaponVar, 0; i >= 0; i, j = i-1, j+3 {
+			addWeaponDamageHP += j
+		}
+	}
+
+	char.RemainHealth -= result.DamageHP + addWeaponDamageHP
+
+	return char
+}
+
+func damage(char model.Character, result model.ActionResult) model.Character {
+	char.RemainHealth -= result.DamageHP
+	char.RemainEnergy -= result.DamageMP
+
 	return char
 }
 
 func convertCharParams(character model.Character) (int, int) {
-	var calcGrowth, calcWeight int
+	var weaponWeight, convertGrowth, convertWeight int
+
+	for _, weapon := range character.Weapons {
+		weaponWeight += weapon.Weight
+	}
 
 	if character.Growth >= 170 {
-		calcGrowth = 1
+		convertGrowth = 1
 	} else {
-		calcGrowth = -1
+		convertGrowth = -1
 	}
 
-	if character.Weight <= 85 {
-		calcWeight = 1
+	if (character.Weight + weaponWeight) <= 85 {
+		convertWeight = 1
 	} else {
-		calcWeight = -1
+		convertWeight = -1
 	}
 
-	return calcGrowth, calcWeight
+	return convertGrowth, convertWeight
 }
 
 func validateActionJumpPosition(jumpPosition ...int) bool {

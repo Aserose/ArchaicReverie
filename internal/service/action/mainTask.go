@@ -53,10 +53,17 @@ func NewActionScene(db *repository.DB, charCfg config.CharacterConfig, genConfig
 		msgToUser:         msgToUser,
 		Conditions:        cond,
 		Location:          tasks.NewLocation(db, log, cond, msgToUser, utilitiesStr),
-		LocationWithEnemy: tasks.NewLocationWithEnemy(db, cond),
-		Recreational:      tasks.NewRecreational(db, charCfg, log, msgToUser),
+		LocationWithEnemy: tasks.NewLocationWithEnemy(db, msgToUser, cond),
+		Recreational:      NewRecreational(db, charCfg, log, msgToUser),
 		CharacterMenu:     NewCharacterMenu(),
 	}
+}
+
+func (a actionScene) HealthCheck(char model.Character) bool {
+	if char.RemainHealth > 9 {
+		return true
+	}
+	return false
 }
 
 func (a *actionScene) GenerateScene() map[string]interface{} {
@@ -79,10 +86,14 @@ func (a *actionScene) GenerateScene() map[string]interface{} {
 		switch pick {
 		case 1:
 			a.Conditions.SetConditionLocation(a.db.Postgres.EventData.GenerateEventLocation())
+
 			result = map[string]interface{}{"location": a.Conditions.GetConditionLocation()}
 		case 2:
-			a.Conditions.SetConditionLocation(a.db.Postgres.EventData.GenerateEventLocation())
+			location := a.db.Postgres.EventData.GenerateEventLocation()
+			location.Obstacle = model.Obstacle{}
+			a.Conditions.SetConditionLocation(location)
 			a.Conditions.SetConditionEnemy(a.db.Postgres.EventData.GenerateEnemy(a.generateSettingEnemy()))
+
 			result = map[string]interface{}{"location": a.Conditions.GetConditionLocation(), "enemy": a.Conditions.GetConditionEnemy()}
 		}
 		return result
@@ -94,6 +105,7 @@ func (a *actionScene) GenerateScene() map[string]interface{} {
 func (a actionScene) inActive() bool {
 	if a.Conditions.GetConditionEnemy() != nil ||
 		a.Conditions.GetConditionLocation() != (model.Location{}) {
+
 		return true
 	}
 

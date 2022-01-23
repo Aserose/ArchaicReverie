@@ -60,7 +60,10 @@ func (r readAndRequest) doRequest(client http.Client, method string, url string,
 }
 
 func (r readAndRequest) readRespBody(resp *http.Response) []byte {
-	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		r.log.Errorf("%s %s", r.log.CallInfoStr(), err.Error())
+	}
 	return bodyBytes
 }
 

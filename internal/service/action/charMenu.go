@@ -17,6 +17,7 @@ func (c *characterMenu) CharMenu(userCharacter model.Character, items model.Item
 	}
 
 	return userCharacter
+
 }
 
 func (c characterMenu) discardWeapons(character model.Character, weapons []model.Weapon) model.Character {
@@ -24,7 +25,7 @@ func (c characterMenu) discardWeapons(character model.Character, weapons []model
 	for i, charWeapon := range character.Inventory.Weapons {
 		for _, discardWeapon := range weapons {
 			if charWeapon.Name == discardWeapon.Name {
-				character.Inventory.CoinAmount += (discardWeapon.Price)/2
+				character.Inventory.CoinAmount += (discardWeapon.Price) / 2
 				character.Inventory.Weapons[i] = model.Weapon{}
 			}
 		}

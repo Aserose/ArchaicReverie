@@ -61,9 +61,9 @@ func (l locationWithEnemy) run(character model.Character, action model.Run) (str
 
 	// challenge variables:
 	//		number of enemies +
-	//		parameter comparison with the fastest enemy (weight, growth) -- 3 variables total
+	//		parameter comparison with the fastest enemy (weight & growth) -- 3 variables total
 	// character variables:
-	//		converted character parameters (weight, growth) +
+	//		converted character parameters (weight & growth) +
 	//		action parameters (body tilt) -- 3 variables total
 
 	result := l.calculateChallengeRunTotalSum(character) + l.calculateCharSumRun(character, action)

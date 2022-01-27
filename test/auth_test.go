@@ -1,4 +1,4 @@
-package tests
+package test
 
 import (
 	"github.com/Aserose/ArchaicReverie/internal/app"
@@ -12,7 +12,9 @@ import (
 func TestAuth(t *testing.T) {
 	logs := logger.NewLogger()
 	_, msgToUser, _ := loadEnv(logs)
+
 	go app.Start(1)
+
 	apiScheme := loadApiScheme(logs)
 
 	cv.Convey("setup", t, func() {

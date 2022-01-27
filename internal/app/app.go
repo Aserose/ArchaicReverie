@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/Aserose/ArchaicReverie/internal/config"
@@ -13,7 +14,9 @@ import (
 	"github.com/Aserose/ArchaicReverie/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -39,7 +42,7 @@ func Start(mode int) {
 		log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
 
-	postgresData := data.NewPostgresData(postgres.Postgres(cfgPostgres, log, logMsg, charConfig), msgToUser, log, logMsg, charConfig)
+	postgresData := data.NewPostgresData(postgres.InitPostgres(cfgPostgres, log, logMsg, charConfig), msgToUser, log, logMsg, charConfig)
 
 	db := repository.NewDB(postgresData)
 
@@ -53,7 +56,17 @@ func Start(mode int) {
 		getApiScheme(endpoints, handlers.Routes(endpoints).Routes(), log)
 	}
 
-	if err := servers.Start(cfgServer.Port, handlers.Routes(endpoints), log, logMsg); err != nil {
+	go func() {
+		if err := servers.Start(cfgServer.Port, handlers.Routes(endpoints), log, logMsg); err != nil {
+			log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	if err := servers.Shutdown(context.Background()); err != nil {
 		log.Errorf(logMsg.Format, log.CallInfoStr(), err.Error())
 	}
 }
@@ -102,5 +115,4 @@ func getApiScheme(endpoints config.Endpoints, info gin.RoutesInfo, log logger.Lo
 	}
 
 	Ch <- apiSchemeJson
-	close(Ch)
 }

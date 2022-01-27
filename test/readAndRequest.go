@@ -1,4 +1,4 @@
-package tests
+package test
 
 import (
 	"encoding/json"
@@ -62,7 +62,7 @@ func (r readAndRequest) doRequest(client http.Client, method string, url string,
 func (r readAndRequest) readRespBody(resp *http.Response) []byte {
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		r.log.Errorf("%s %s", r.log.CallInfoStr(), err.Error())
+		r.log.Panicf("%s: %s", r.log.CallInfoStr(), err.Error())
 	}
 	return bodyBytes
 }
@@ -70,7 +70,7 @@ func (r readAndRequest) readRespBody(resp *http.Response) []byte {
 func (r readAndRequest) unmarshalInt(data []byte) int {
 	var beInt int
 	if err := json.Unmarshal(data, &beInt); err != nil {
-		r.log.Errorf("%s: %s: %s", r.log.CallInfoStr(), err.Error(), string(data))
+		r.log.Panicf(`%s: %s: respBody:  %s:"`, r.log.CallInfoStr(), err.Error(), string(data))
 	}
 
 	return beInt
@@ -80,7 +80,7 @@ func (r readAndRequest) unmarshalChar(data []byte) model.Character {
 	var char model.Character
 
 	if err := json.Unmarshal(data, &char); err != nil {
-		r.log.Errorf("%s: %s: %s", r.log.CallInfoStr(), err.Error(), string(data))
+		r.log.Errorf("%s: %s: respBody: %s", r.log.CallInfoStr(), err.Error(), string(data))
 	}
 
 	return char

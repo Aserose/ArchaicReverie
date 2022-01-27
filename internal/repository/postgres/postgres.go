@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func Postgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *sqlx.DB {
+func InitPostgres(cfgPostgres *config.CfgPostgres, log logger.Logger, logMsg config.LogMsg, charConfig config.CharacterConfig) *sqlx.DB {
 
 	log.Infof(logMsg.Format, log.PackageAndFileNames(), logMsg.Init)
 
